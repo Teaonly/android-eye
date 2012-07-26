@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.lang.System;
 import java.lang.Thread;
+import java.util.*;
+import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
@@ -28,6 +30,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.format.Formatter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -42,9 +45,9 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity 
     implements View.OnTouchListener, CameraView.CameraReadyCallback, OverlayView.UpdateDoneCallback{
+    static final String TAG = "TEAONLY";
 
-    NetInfoAdapter netInfo;
-    TeaServer webServer;
+    TeaServer webServer = null;
     private CameraView cameraView_;
     private OverlayView overlayView_;
     private Button btnExit;
@@ -120,10 +123,27 @@ public class MainActivity extends Activity
         overlayView_.setOnTouchListener(this);
         overlayView_.setUpdateDoneCallback(this);
     }
-   
+    
+    public String getLocalIpAddress() {
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+                NetworkInterface intf = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress()) {
+                        String ipAddr = inetAddress.getHostAddress();
+                        return ipAddr;
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            Log.d(TAG, ex.toString());
+        }
+        return null;
+    }   
+
     private void initWebServer() {
-        NetInfoAdapter.Update(this);
-        String ipAddr = NetInfoAdapter.getInfo("IP");          
+        String ipAddr = getLocalIpAddress();
         if ( ipAddr != null ) {
             try{
                 webServer = new TeaServer(8080, "/sdcard/"); 

@@ -43,9 +43,11 @@ import android.widget.TextView;
 public class MainActivity extends Activity 
     implements View.OnTouchListener, CameraView.CameraReadyCallback, OverlayView.UpdateDoneCallback{
 
+    NetInfoAdapter netInfo;
+    TeaServer webServer;
     private CameraView cameraView_;
     private OverlayView overlayView_;
-    private Button btnStart;
+    private Button btnExit;
     private TextView tvMessage;
 
     @Override
@@ -60,18 +62,16 @@ public class MainActivity extends Activity
 
         setContentView(R.layout.main);
 
-        btnStart = (Button)findViewById(R.id.btn_start);
-        btnStart.setOnClickListener(startAction);
+        btnExit = (Button)findViewById(R.id.btn_exit);
+        btnExit.setOnClickListener(exitAction);
         tvMessage = (TextView)findViewById(R.id.tv_message);
-        tvMessage.setText(getString(R.string.msg_help));
         
         initCamera();
     }
     
     @Override
     public void onCameraReady() {
-        int wid = cameraView_.Width();
-        int hei = cameraView_.Height();
+        initWebServer();
     }
  
     @Override
@@ -120,8 +120,25 @@ public class MainActivity extends Activity
         overlayView_.setOnTouchListener(this);
         overlayView_.setUpdateDoneCallback(this);
     }
-    
-    private OnClickListener startAction = new OnClickListener() {
+   
+    private void initWebServer() {
+        NetInfoAdapter.Update(this);
+        String ipAddr = NetInfoAdapter.getInfo("IP");          
+        if ( ipAddr != null ) {
+            try{
+                webServer = new TeaServer(8080, "/sdcard/"); 
+            } catch (IOException e){
+                webServer = null;
+            }
+        }
+        if ( webServer != null) {
+            tvMessage.setText( getString(R.string.msg_access) + " http://" + ipAddr  + ":8080" );
+        } else {
+            tvMessage.setText( getString(R.string.msg_error) );
+        }
+    }
+
+    private OnClickListener exitAction = new OnClickListener() {
         @Override
         public void onClick(View v) {
         

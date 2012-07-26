@@ -48,7 +48,7 @@
                 android:background="#88333333"
                 android:orientation="horizontal">
                 <Button 
-                    android:id="@+id/btn_start"
+                    android:id="@+id/btn_exit"
                     android:layout_height="wrap_content"
                     android:layout_width="128dip"
                     android:layout_marginLeft = "5dip"
@@ -60,7 +60,7 @@
                     android:shadowDy="2"
                     android:shadowRadius="1"
                     android:textStyle="bold"            
-                    android:text="@string/action_start"/>
+                    android:text="@string/action_exit"/>
             </LinearLayout>
             
         </LinearLayout>

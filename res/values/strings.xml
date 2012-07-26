@@ -2,8 +2,8 @@
 <resources>
     <string name="app_name">视讯监视</string>
 
-    <string name="action_start">启动视讯</string>
     <string name="action_exit">关闭程序</string>
 
-    <string name="msg_help">按下“启动视讯”，开始监控</string>
+    <string name="msg_access">PC浏览器查看</string>
+    <string name="msg_error">错误：没有可用的网络连接，请启动WiFi</string>
 </resources>

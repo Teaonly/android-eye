@@ -243,8 +243,23 @@ public class NanoHTTPD
 	{
 		myTcpPort = port;
 		myRootDir = wwwroot;
-        myAssets = Resources.getSystem().getAssets();
-		myServerSocket = new ServerSocket( myTcpPort );
+        myAssets = null;
+	    
+        myServerSocket = new ServerSocket( myTcpPort );
+        beginDaemon();
+    }
+
+    public NanoHTTPD( int port, AssetManager wwwroot ) throws IOException
+	{
+		myTcpPort = port;
+        myAssets = wwwroot;
+        myRootDir = null;
+	    
+        myServerSocket = new ServerSocket( myTcpPort );
+        beginDaemon();
+    }
+    
+    private void beginDaemon() throws IOException {
 		myThread = new Thread( new Runnable()
         {
             public void run()
@@ -260,8 +275,7 @@ public class NanoHTTPD
         });
 		myThread.setDaemon( true );
 		myThread.start();
-	}
-
+    }
 	/**
 	 * Stops the server.
 	 */

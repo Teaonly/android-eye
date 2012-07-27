@@ -17,6 +17,7 @@ import android.app.AlertDialog.Builder;
 import android.app.ProgressDialog;
 import android.content.res.Resources;
 import android.content.res.AssetManager;
+import android.content.res.AssetFileDescriptor;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.PictureCallback;
@@ -128,17 +129,13 @@ public class MainActivity extends Activity
     
     public String getLocalIpAddress() {
         
-        /*
-        AssetManager aman = Resources.getSystem().getAssets();
+        AssetManager aman = getAssets();
         try {
-            String aList[] = aman.list("assets/"); 
-            for( int i = 0; i < aList.length; i++) {
-                Log.d(TAG, ">>>>" + aList[i]);
-            }
+            AssetFileDescriptor assetFile = aman.openFd("demo.html");
+            Log.d(TAG, "File length = " + assetFile.getLength() );
         } catch ( IOException ex) {
             Log.d(TAG, ex.toString());
         }
-        */
 
         try {
             for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
@@ -161,7 +158,7 @@ public class MainActivity extends Activity
         String ipAddr = getLocalIpAddress();
         if ( ipAddr != null ) {
             try{
-                webServer = new TeaServer(8080, "/android_assets/"); 
+                webServer = new TeaServer(8080, this); 
             } catch (IOException e){
                 webServer = null;
             }

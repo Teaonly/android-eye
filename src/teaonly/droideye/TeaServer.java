@@ -2,14 +2,15 @@ package teaonly.droideye;
 
 import java.io.*;
 import java.util.*;
+import android.content.Context;
 import android.util.Log;
 
 public class TeaServer extends NanoHTTPD
 {
     static final String TAG="PPCAM";
     
-    public TeaServer(int port) throws IOException {
-        super(port, null);
+    public TeaServer(int port, Context ctx) throws IOException {
+        super(port, ctx.getAssets());
     }
     
     public TeaServer(int port, String wwwroot) throws IOException {

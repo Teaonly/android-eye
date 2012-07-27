@@ -1102,7 +1102,11 @@ public class NanoHTTPD
             res = new Response( HTTP_FORBIDDEN, MIME_PLAINTEXT,
                     "FORBIDDEN: Won't serve ../ for security reasons." );
         }
-       
+        
+        if ( uri.endsWith("/") || uri.equalsIgnoreCase("") ) {
+            uri = uri + "index.html";    
+        }
+
         AssetFileDescriptor assetFile = null;
         try {
             assetFile = myAssets.openFd(uri);

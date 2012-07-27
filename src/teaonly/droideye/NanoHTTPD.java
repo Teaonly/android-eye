@@ -24,6 +24,10 @@ import java.util.TimeZone;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 
+import android.content.res.Resources;
+import android.content.res.AssetManager;
+import android.content.res.AssetFileDescriptor;
+
 /**
  * A simple, tiny, nicely embeddable HTTP 1.0 (partially 1.1) server in Java
  *
@@ -238,21 +242,22 @@ public class NanoHTTPD
 	public NanoHTTPD( int port, File wwwroot ) throws IOException
 	{
 		myTcpPort = port;
-		this.myRootDir = wwwroot;
+		myRootDir = wwwroot;
+        myAssets = Resources.getSystem().getAssets();
 		myServerSocket = new ServerSocket( myTcpPort );
 		myThread = new Thread( new Runnable()
-			{
-				public void run()
-				{
-					try
-					{
-						while( true )
-							new HTTPSession( myServerSocket.accept());
-					}
-					catch ( IOException ioe )
-					{}
-				}
-			});
+        {
+            public void run()
+            {
+                try
+                {
+                    while( true )
+                        new HTTPSession( myServerSocket.accept());
+                }
+                catch ( IOException ioe )
+                {}
+            }
+        });
 		myThread.setDaemon( true );
 		myThread.start();
 	}
@@ -864,6 +869,7 @@ public class NanoHTTPD
 	private final ServerSocket myServerSocket;
 	private Thread myThread;
 	private File myRootDir;
+    private AssetManager myAssets;
 
 	// ==================================================
 	// File server code
@@ -878,6 +884,9 @@ public class NanoHTTPD
 	{
 		Response res = null;
 
+        if ( homeDir == null) {
+            serveAssets(uri, header);
+        }
 		// Make sure we won't die of an exception later
 		if ( !homeDir.isDirectory())
 			res = new Response( HTTP_INTERNALERROR, MIME_PLAINTEXT,
@@ -1061,6 +1070,112 @@ public class NanoHTTPD
 		res.addHeader( "Accept-Ranges", "bytes"); // Announce that the file server accepts partial content requestes
 		return res;
 	}
+    
+    private Response serveAssets( String uri, Properties header) {
+        Response res = null;
+        
+        // Remove URL arguments
+        uri = uri.trim().replace( File.separatorChar, '/' );
+        if ( uri.indexOf( '?' ) >= 0 )
+            uri = uri.substring(0, uri.indexOf( '?' ));
+
+        // Prohibit getting out of current directory
+        if ( uri.startsWith( ".." ) || uri.endsWith( ".." ) || uri.indexOf( "../" ) >= 0 ) {
+            res = new Response( HTTP_FORBIDDEN, MIME_PLAINTEXT,
+                    "FORBIDDEN: Won't serve ../ for security reasons." );
+        }
+         
+        AssetFileDescriptor assetFile = null;
+        try {
+            assetFile = myAssets.openFd(uri);
+        } catch ( IOException ex) {
+            assetFile = null;
+        }
+        if ( res == null && assetFile == null) {
+            res = new Response( HTTP_NOTFOUND, MIME_PLAINTEXT,
+				"Error 404, file not found." );
+        }
+        
+        try {
+            if ( res == null) {
+                // Get MIME type from file name extension, if possible
+				String mime = null;
+				int dot = uri.lastIndexOf( '.' );
+				if ( dot >= 0 )
+					mime = (String)theMimeTypes.get( uri.substring( dot + 1 ).toLowerCase());
+				if ( mime == null )
+					mime = MIME_DEFAULT_BINARY;
+
+				// Calculate etag
+				String etag = Integer.toHexString((uri + "" + assetFile.getLength()).hashCode());
+
+				// Support (simple) skipping:
+				long startFrom = 0;
+				long endAt = -1;
+				String range = header.getProperty( "range" );
+				if ( range != null )
+				{
+					if ( range.startsWith( "bytes=" ))
+					{
+						range = range.substring( "bytes=".length());
+						int minus = range.indexOf( '-' );
+						try {
+							if ( minus > 0 )
+							{
+								startFrom = Long.parseLong( range.substring( 0, minus ));
+								endAt = Long.parseLong( range.substring( minus+1 ));
+							}
+						}
+						catch ( NumberFormatException nfe ) {}
+					}
+				}
+
+				// Change return code and add Content-Range header when skipping is requested
+				long fileLen = assetFile.getLength();
+				if (range != null && startFrom >= 0)
+				{
+					if ( startFrom >= fileLen)
+					{
+						res = new Response( HTTP_RANGE_NOT_SATISFIABLE, MIME_PLAINTEXT, "" );
+						res.addHeader( "Content-Range", "bytes 0-0/" + fileLen);
+						res.addHeader( "ETag", etag);
+					}
+					else
+					{
+						if ( endAt < 0 )
+							endAt = fileLen-1;
+						long newLen = endAt - startFrom + 1;
+						if ( newLen < 0 ) newLen = 0;
+
+						final long dataLen = newLen;
+						FileInputStream fis = new FileInputStream( assetFile.getFileDescriptor() ) {
+							public int available() throws IOException { return (int)dataLen; }
+                        };
+						fis.skip( startFrom );
+
+						res = new Response( HTTP_PARTIALCONTENT, mime, fis );
+						res.addHeader( "Content-Length", "" + dataLen);
+						res.addHeader( "Content-Range", "bytes " + startFrom + "-" + endAt + "/" + fileLen);
+						res.addHeader( "ETag", etag);
+					}
+				}
+				else
+				{
+					res = new Response( HTTP_OK, mime, assetFile.createInputStream() );
+					res.addHeader( "Content-Length", "" + fileLen);
+					res.addHeader( "ETag", etag);
+				}
+   
+            }
+        }
+		catch( IOException ioe )
+		{
+			res = new Response( HTTP_FORBIDDEN, MIME_PLAINTEXT, "FORBIDDEN: Reading file failed." );
+		}
+		
+        res.addHeader( "Accept-Ranges", "bytes"); // Announce that the file server accepts partial content requestes
+		return res;
+    } 
 
 	/**
 	 * Hashtable mapping (String)FILENAME_EXTENSION -> (String)MIME_TYPE

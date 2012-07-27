@@ -7,12 +7,15 @@ import android.util.Log;
 public class TeaServer extends NanoHTTPD
 {
     static final String TAG="PPCAM";
-
-    private File homeDir;
-    public TeaServer(int port, String wwwroot) throws IOException {
-        super(port, new File( wwwroot ).getAbsoluteFile() );
-        homeDir = new File( wwwroot);
+    
+    public TeaServer(int port) throws IOException {
+        super(port, null);
     }
+    
+    public TeaServer(int port, String wwwroot) throws IOException {
+        super(port, new File(wwwroot).getAbsoluteFile() );
+    }
+
     public Response serve( String uri, String method, Properties header, Properties parms, Properties files ) {
         Log.d(TAG, "httpd request >>" + method + " '" + uri + "' " + "   " + parms);
     
@@ -21,7 +24,7 @@ public class TeaServer extends NanoHTTPD
         } else if ( uri.startsWith("/stream/") ) {
             return serveStream(uri, method, header, parms, files);
         } else {
-            return serveFile( uri, header, homeDir, true ); 
+            return super.serve(uri, method, header, parms, files); 
         }
 	}
 

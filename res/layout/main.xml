@@ -23,9 +23,7 @@
             android:id="@+id/layout_setup" 
             android:layout_width="fill_parent" 
             android:layout_height="fill_parent" 
-            android:layout_marginLeft = "16dip"
-            android:layout_marginRight = "16dip"
-            android:gravity="center" 
+            android:gravity="center|bottom" 
             android:orientation="vertical">
             
             <LinearLayout
@@ -38,6 +36,9 @@
                     android:id="@+id/tv_message"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft = "5dip"
+                    android:layout_marginRight = "5dip"
+                    android:gravity="center"
                     android:textColor="#FFFFFFFF"
                     android:textSize="24dip"/>
             </LinearLayout>

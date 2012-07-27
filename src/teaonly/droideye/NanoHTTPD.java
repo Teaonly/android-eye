@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import android.content.res.Resources;
 import android.content.res.AssetManager;
 import android.content.res.AssetFileDescriptor;
+import android.util.Log;
 
 /**
  * A simple, tiny, nicely embeddable HTTP 1.0 (partially 1.1) server in Java
@@ -244,7 +245,7 @@ public class NanoHTTPD
 		myTcpPort = port;
 		myRootDir = wwwroot;
         myAssets = null;
-	    
+        
         myServerSocket = new ServerSocket( myTcpPort );
         beginDaemon();
     }
@@ -254,7 +255,7 @@ public class NanoHTTPD
 		myTcpPort = port;
         myAssets = wwwroot;
         myRootDir = null;
-	    
+	   
         myServerSocket = new ServerSocket( myTcpPort );
         beginDaemon();
     }
@@ -899,7 +900,7 @@ public class NanoHTTPD
 		Response res = null;
 
         if ( homeDir == null) {
-            serveAssets(uri, header);
+            return serveAssets(uri, header);
         }
 		// Make sure we won't die of an exception later
 		if ( !homeDir.isDirectory())
@@ -1090,6 +1091,9 @@ public class NanoHTTPD
         
         // Remove URL arguments
         uri = uri.trim().replace( File.separatorChar, '/' );
+        if ( uri.startsWith("/") ) {
+            uri = uri.substring(1, uri.length());
+        }
         if ( uri.indexOf( '?' ) >= 0 )
             uri = uri.substring(0, uri.indexOf( '?' ));
 
@@ -1098,7 +1102,7 @@ public class NanoHTTPD
             res = new Response( HTTP_FORBIDDEN, MIME_PLAINTEXT,
                     "FORBIDDEN: Won't serve ../ for security reasons." );
         }
-         
+       
         AssetFileDescriptor assetFile = null;
         try {
             assetFile = myAssets.openFd(uri);

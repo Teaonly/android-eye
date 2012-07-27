@@ -128,14 +128,6 @@ public class MainActivity extends Activity
     }
     
     public String getLocalIpAddress() {
-        
-        AssetManager aman = getAssets();
-        try {
-            AssetFileDescriptor assetFile = aman.openFd("demo.html");
-            Log.d(TAG, "File length = " + assetFile.getLength() );
-        } catch ( IOException ex) {
-            Log.d(TAG, ex.toString());
-        }
 
         try {
             for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {

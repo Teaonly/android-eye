@@ -1,15 +1,36 @@
-var supportedSize = new Array();
 var planeWidth = 0;
 var planeHeight = 0;
 var basicURL = "";
 
+function CameraSize () {
+    this.width = 0;
+    this.height = 0;
+}
+var supportedSize = new Array();
+
+// =========================================================
 var onPlayClick = function () {
-    
+        
 };
 
 var onQueryDone = function (ret) {
-    $("#debug_msg").html(ret);   
-    $("#btn_play").removeClass('ui-disabled');        
+    $("#btn_play").removeClass('ui-disabled');
+    $("#resolution-choice").empty();
+
+    var resList = ret.split("|");
+    for(var i = 0; i < resList.length; i++) {
+        var res = resList[i].split("x");
+        var newRes = new CameraSize();
+        newRes.width = res[0];
+        newRes.height = res[1];    
+        supportedSize.push(newRes);
+        var newOption = "<option value='" + i + "'>" + resList[i] + "</option>";
+        $("#resolution-choice").append(newOption);
+    }
+    
+    $("#resolution-choice").selectmenu('refresh');
+
+    $("#debug_msg").html("连接成功");
 }
 var onQueryError = function () {
     $("#debug_msg").html("连接视频错误，请刷新重试！");   

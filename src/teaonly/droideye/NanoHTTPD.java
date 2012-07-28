@@ -432,12 +432,12 @@ public class NanoHTTPD
 				// in data section, too, read it:
 				if ( method.equalsIgnoreCase( "POST" ))
 				{
-					String contentType = "";
-					String contentTypeHeader = header.getProperty("content-type");
-					StringTokenizer st = new StringTokenizer( contentTypeHeader , "; " );
-					if ( st.hasMoreTokens()) {
-						contentType = st.nextToken();
-					}
+                    String contentType = "";
+                    String contentTypeHeader = header.getProperty("content-type");
+                    StringTokenizer st = new StringTokenizer( contentTypeHeader , "; " );
+                    if ( st.hasMoreTokens()) {
+                        contentType = st.nextToken();
+                    }
 
 					if (contentType.equalsIgnoreCase("multipart/form-data"))
 					{
@@ -1106,12 +1106,15 @@ public class NanoHTTPD
         if ( uri.endsWith("/") || uri.equalsIgnoreCase("") ) {
             uri = uri + "index.html";    
         }
+        
+        Log.d("TEAONLY", ">>>> URI = " + uri);
 
-        AssetFileDescriptor assetFile = null;
+        InputStream assetFile = null;
         try {
-            assetFile = myAssets.openFd(uri);
+            assetFile = myAssets.open(uri);
         } catch ( IOException ex) {
             assetFile = null;
+            Log.d("TEAONLY", ">>>> Open Error:" + ex);
         }
         if ( res == null && assetFile == null) {
             res = new Response( HTTP_NOTFOUND, MIME_PLAINTEXT,
@@ -1129,7 +1132,7 @@ public class NanoHTTPD
 					mime = MIME_DEFAULT_BINARY;
 
 				// Calculate etag
-				String etag = Integer.toHexString((uri + "" + assetFile.getLength()).hashCode());
+				String etag = Integer.toHexString((uri + "" + assetFile.available()).hashCode());
 
 				// Support (simple) skipping:
 				long startFrom = 0;
@@ -1153,7 +1156,7 @@ public class NanoHTTPD
 				}
 
 				// Change return code and add Content-Range header when skipping is requested
-				long fileLen = assetFile.getLength();
+				long fileLen = assetFile.available();
 				if (range != null && startFrom >= 0)
 				{
 					if ( startFrom >= fileLen)
@@ -1170,12 +1173,9 @@ public class NanoHTTPD
 						if ( newLen < 0 ) newLen = 0;
 
 						final long dataLen = newLen;
-						FileInputStream fis = new FileInputStream( assetFile.getFileDescriptor() ) {
-							public int available() throws IOException { return (int)dataLen; }
-                        };
-						fis.skip( startFrom );
+						assetFile.skip( startFrom );
 
-						res = new Response( HTTP_PARTIALCONTENT, mime, fis );
+						res = new Response( HTTP_PARTIALCONTENT, mime, assetFile );
 						res.addHeader( "Content-Length", "" + dataLen);
 						res.addHeader( "Content-Range", "bytes " + startFrom + "-" + endAt + "/" + fileLen);
 						res.addHeader( "ETag", etag);
@@ -1183,7 +1183,7 @@ public class NanoHTTPD
 				}
 				else
 				{
-					res = new Response( HTTP_OK, mime, assetFile.createInputStream() );
+					res = new Response( HTTP_OK, mime, assetFile );
 					res.addHeader( "Content-Length", "" + fileLen);
 					res.addHeader( "ETag", etag);
 				}

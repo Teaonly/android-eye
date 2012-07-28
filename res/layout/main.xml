@@ -50,18 +50,22 @@
                 android:background="#88333333"
                 android:orientation="horizontal">
                 <Button 
+                    android:id="@+id/btn_setup"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_margin = "8dip"
+                    android:textSize="24dip"
+                    android:textStyle="bold"            
+                    android:text="@string/action_setup"/>
+                <Button 
                     android:id="@+id/btn_exit"
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
-                    android:layout_margin = "16dip"
+                    android:layout_margin = "8dip"
                     android:textSize="24dip"
-                    android:shadowColor="#FFFFFFFF"
-                    android:singleLine="true"
-                    android:shadowDx="0"
-                    android:shadowDy="2"
-                    android:shadowRadius="1"
                     android:textStyle="bold"            
                     android:text="@string/action_exit"/>
+
             </LinearLayout>
             
         </LinearLayout>

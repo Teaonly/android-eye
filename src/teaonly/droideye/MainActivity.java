@@ -4,6 +4,7 @@ import teaonly.droideye.*;
 import java.io.IOException;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.lang.System;
 import java.lang.Thread;
 import java.util.*;
@@ -102,6 +103,7 @@ public class MainActivity extends Activity
     @Override
     public void onPause(){  
         super.onPause();
+        webServer.stop();
         cameraView_.StopPreview(); 
         cameraView_.Release();
         finish();
@@ -151,6 +153,7 @@ public class MainActivity extends Activity
         if ( ipAddr != null ) {
             try{
                 webServer = new TeaServer(8080, this); 
+                webServer.registerCGI("/cgi/query", doQuery);
             } catch (IOException e){
                 webServer = null;
             }
@@ -168,5 +171,23 @@ public class MainActivity extends Activity
         
         }   
     };
-
+    
+    private TeaServer.CommonGatewayInterface doQuery = new TeaServer.CommonGatewayInterface () {
+        @Override
+        public String run(Properties parms) {
+            List<Camera.Size> supportSize =  cameraView_.getSupportedPreviewSize();                             
+            String ret = "";
+            for(int i = 0; i < supportSize.size() - 1; i++) {
+                ret = ret + "" + supportSize.get(i).width + "x" + supportSize.get(i).height + "|";
+            }
+            int i = supportSize.size() - 1;
+            ret = ret + "" + supportSize.get(i).width + "x" + supportSize.get(i).height ;
+            return ret;
+        }   
+        
+        @Override 
+        public InputStream streaming(Properties parms) {
+            return null;
+        }    
+    };  
 }

@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">视讯监视</string>
 
+    <string name="action_setup">设置服务</string>
     <string name="action_exit">关闭程序</string>
 
     <string name="msg_access">PC上打开</string>

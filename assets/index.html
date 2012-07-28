@@ -1,1 +1,51 @@
-<h1>Hello World</h1>
+<!DOCTYPE html> 
+<html> 
+<head> 
+    <title>远程视讯监控王</title> 
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"> 
+    <link rel="stylesheet" href="res/jquery.mobile-1.1.1.min.css" />
+    <link rel="stylesheet" href="extern.css">
+    <script src="res/jquery-1.7.1.min.js"></script>
+    <script src="res/jquery.mobile-1.1.1.min.js"></script>
+    <script src="droideye.js"></script>
+</head> 
+<body> 
+
+<!-- 
+/*********************************************************
+ * Main page 
+ *
+ *********************************************************/
+-->
+<div data-role="page" data-title="login" id="page_main" data-theme="c" >
+    <div data-role="header">
+        <h2>视频控制面板</h2>
+    </div>
+  
+    <div data-role="content">
+        <ul data-role="listview" data-inset="true" >
+            <li>
+                <div class="live_image_box" id="video_plane">
+                    <img id="live_image" src="images/black.png">
+                </div>
+            </li> 
+            <li data-role="fieldcontain" class="center">
+                <div class="center">
+                    <span>选择视频分辨率:</span>
+                    <select name="resolution-choice" id="resolution-choice" data-native-menu="false">
+                    </select>
+                </div>
+                <a href="#" data-role="button" id="btn_play">播放视频</a>
+            </li>
+        </ul>
+        <!-- for debug -->
+        <div id="bottom_div">
+            <span id="debug_msg">正在连接视频</span>
+        </div>
+    </div><!-- /content -->  
+
+</div><!-- page -->
+
+</body>
+</html>

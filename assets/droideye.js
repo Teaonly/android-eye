@@ -49,10 +49,9 @@ $("#page_main").live("pageinit", function() {
 
     $("#btn_play").addClass('ui-disabled');        
     $("#btn_play").click(onPlayClick);
-    
-    $("#debug_msg").html(basicURL);
+   
     $.ajax({
-        url: "http://192.168.0.102:8080/cgi/query",
+        url: basicURL + "cgi/query",
         cache: false,
         error: onQueryError,
         success: onQueryDone

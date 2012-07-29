@@ -49,8 +49,12 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity 
     implements View.OnTouchListener, CameraView.CameraReadyCallback, OverlayView.UpdateDoneCallback{
-    static final String TAG = "TEAONLY";
+    private static final String TAG = "TEAONLY";
+    private enum AppState{
+        IDLE, STREAMING 
+    }
 
+    AppState appState = AppState.IDLE;
     TeaServer webServer = null;
     private CameraView cameraView_;
     private OverlayView overlayView_;
@@ -130,7 +134,6 @@ public class MainActivity extends Activity
     }
     
     public String getLocalIpAddress() {
-
         try {
             for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
                 NetworkInterface intf = en.nextElement();
@@ -154,7 +157,11 @@ public class MainActivity extends Activity
             try{
                 webServer = new TeaServer(8080, this); 
                 webServer.registerCGI("/cgi/query", doQuery);
-            } catch (IOException e){
+                webServer.registerCGI("/cgi/status", doStatus);
+                webServer.registerCGI("/cgi/startPlay", doPlay);
+                webServer.registerCGI("/cgi/stopPlay", doStop);
+                webServer.registerCGI("/stream/capture", doCapture);
+            }catch (IOException e){
                 webServer = null;
             }
         }
@@ -171,7 +178,13 @@ public class MainActivity extends Activity
         
         }   
     };
-    
+   
+    private PreviewCallback previewCb_ = new PreviewCallback() {
+        public void onPreviewFrame(byte[] frame, Camera c) { 
+            Log.d(TAG,">>>>>New Frame>>>>>"); 
+        }    
+    };
+     
     private TeaServer.CommonGatewayInterface doQuery = new TeaServer.CommonGatewayInterface () {
         @Override
         public String run(Properties parms) {
@@ -189,5 +202,69 @@ public class MainActivity extends Activity
         public InputStream streaming(Properties parms) {
             return null;
         }    
-    };  
+    }; 
+
+    private TeaServer.CommonGatewayInterface doStatus = new TeaServer.CommonGatewayInterface () {
+        @Override
+        public String run(Properties parms) {
+            String ret;
+            if ( appState == AppState.IDLE) {
+                ret = "idle";
+            } else {
+                ret = "streaming";
+            } 
+            return ret;
+        } 
+        
+        @Override 
+        public InputStream streaming(Properties parms) {
+            return null;
+        }    
+    }; 
+ 
+    private TeaServer.CommonGatewayInterface doPlay = new TeaServer.CommonGatewayInterface () {
+        @Override
+        public String run(Properties parms) {
+            if ( appState == AppState.IDLE) {
+                int wid = Integer.parseInt(parms.getProperty("wid")); 
+                int hei = Integer.parseInt(parms.getProperty("hei"));
+                cameraView_.setupCamera(wid, hei); 
+                cameraView_.SetPreview( previewCb_ );
+                appState = AppState.STREAMING;
+                return "OK";
+            } else {
+                return "BUSY";
+            }
+        }   
+        
+        @Override 
+        public InputStream streaming(Properties parms) {
+            return null;
+        }    
+    }; 
+ 
+    private TeaServer.CommonGatewayInterface doStop = new TeaServer.CommonGatewayInterface () {
+        @Override
+        public String run(Properties parms) {
+            return " ";
+        }   
+        
+        @Override 
+        public InputStream streaming(Properties parms) {
+            return null;
+        }
+    }; 
+ 
+    private TeaServer.CommonGatewayInterface doCapture = new TeaServer.CommonGatewayInterface () {
+        @Override
+        public String run(Properties parms) {
+            return null;
+        }   
+        
+        @Override 
+        public InputStream streaming(Properties parms) {
+            return null;
+        }
+    }; 
+ 
 }

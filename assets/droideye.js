@@ -1,6 +1,10 @@
+//////////////////////////////////////////////
+// Global variable define
+//////////////////////////////////////////////
 var planeWidth = 0;
 var planeHeight = 0;
 var basicURL = "";
+var inStreaming = false;
 
 function CameraSize () {
     this.width = 0;
@@ -8,11 +12,22 @@ function CameraSize () {
 }
 var supportedSize = new Array();
 
-// =========================================================
-var onPlayClick = function () {
-        
-};
 
+//////////////////////////////////////////////
+// Global function define
+//////////////////////////////////////////////
+var onStausDone = function (ret) {
+    if (ret == "idle") {
+        $.ajax({
+            url: basicURL + "cgi/query",
+            cache: false,
+            error: onHttpError,
+            success: onQueryDone
+        });
+    } else {
+        $("#debug_msg").html("其他人正在使用，请刷新重试！" + ret);   
+    }
+}
 var onQueryDone = function (ret) {
     $("#btn_play").removeClass('ui-disabled');
     $("#resolution-choice").empty();
@@ -32,9 +47,34 @@ var onQueryDone = function (ret) {
 
     $("#debug_msg").html("连接成功");
 }
-var onQueryError = function () {
-    $("#debug_msg").html("连接视频错误，请刷新重试！");   
+
+var onPlayDone = function (ret) {
+    if ( ret == "BUSY") {
+        $("#debug_msg").html("连接视频错误，请刷新重试！");   
+        $("#btn_play").addClass('ui-disabled');               
+    } else {
+        $("#debug_msg").html("正在播放...");   
+    }
 }
+
+var onHttpError = function () {
+    $("#debug_msg").html("连接视频错误，请刷新重试！");   
+    $("#btn_play").addClass('ui-disabled');        
+}
+
+var playClick = function () {
+    var resIndex = $("#resolution-choice").value();
+    var str = "Width = " + supportedSize[resIndex].width;
+    $("#debug_msg").html(str);   
+/*
+     $.ajax({
+        url: basicURL + "cgi/play",
+        cache: false,
+        error: onHttpError,
+        success: onPlayDone
+    });
+*/    
+};
 
 $("#page_main").live("pageinit", function() {
     basicURL = $(location).attr('href');
@@ -48,13 +88,13 @@ $("#page_main").live("pageinit", function() {
     $("#video_plane").height(planeHeight);
 
     $("#btn_play").addClass('ui-disabled');        
-    $("#btn_play").click(onPlayClick);
+    $("#btn_play").bind("click", playClick);
    
     $.ajax({
-        url: basicURL + "cgi/query",
+        url: basicURL + "cgi/status",
         cache: false,
-        error: onQueryError,
-        success: onQueryDone
+        error: onHttpError,
+        success: onStausDone
     });
 });
 

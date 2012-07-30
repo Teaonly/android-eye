@@ -30,8 +30,9 @@ var onStausDone = function (ret) {
 }
 var onQueryDone = function (ret) {
     $("#btn_play").removeClass('ui-disabled');
+    $("#btn_play").bind("click", playClick);
+    
     $("#resolution-choice").empty();
-
     var resList = ret.split("|");
     for(var i = 0; i < resList.length; i++) {
         var res = resList[i].split("x");
@@ -42,7 +43,6 @@ var onQueryDone = function (ret) {
         var newOption = "<option value='" + i + "'>" + resList[i] + "</option>";
         $("#resolution-choice").append(newOption);
     }
-    
     $("#resolution-choice").selectmenu('refresh');
 
     $("#debug_msg").html("连接成功");
@@ -63,17 +63,16 @@ var onHttpError = function () {
 }
 
 var playClick = function () {
-    var resIndex = $("#resolution-choice").value();
-    var str = "Width = " + supportedSize[resIndex].width;
-    $("#debug_msg").html(str);   
-/*
-     $.ajax({
-        url: basicURL + "cgi/play",
+    var resIndex = $("#resolution-choice").val();
+    var str = "wid=" + supportedSize[resIndex].width;
+    str = str + "&hei=" + supportedSize[resIndex].height;
+    $.ajax({    
+    url: basicURL + "cgi/start",
+        data: str, 
         cache: false,
         error: onHttpError,
         success: onPlayDone
     });
-*/    
 };
 
 $("#page_main").live("pageinit", function() {
@@ -87,15 +86,15 @@ $("#page_main").live("pageinit", function() {
     $("#video_plane").width(planeWidth);
     $("#video_plane").height(planeHeight);
 
-    $("#btn_play").addClass('ui-disabled');        
-    $("#btn_play").bind("click", playClick);
-   
+    $("#btn_play").addClass('ui-disabled');
+    
     $.ajax({
         url: basicURL + "cgi/status",
         cache: false,
         error: onHttpError,
         success: onStausDone
     });
+
 });
 
 

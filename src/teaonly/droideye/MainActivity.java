@@ -158,8 +158,8 @@ public class MainActivity extends Activity
                 webServer = new TeaServer(8080, this); 
                 webServer.registerCGI("/cgi/query", doQuery);
                 webServer.registerCGI("/cgi/status", doStatus);
-                webServer.registerCGI("/cgi/startPlay", doPlay);
-                webServer.registerCGI("/cgi/stopPlay", doStop);
+                webServer.registerCGI("/cgi/start", doPlay);
+                webServer.registerCGI("/cgi/stop", doStop);
                 webServer.registerCGI("/stream/capture", doCapture);
             }catch (IOException e){
                 webServer = null;

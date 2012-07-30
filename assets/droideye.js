@@ -11,51 +11,41 @@ function CameraSize () {
     this.height = 0;
 }
 var supportedSize = new Array();
-
+var currentSize = new CameraSize();
 
 //////////////////////////////////////////////
 // Global function define
 //////////////////////////////////////////////
-var onStausDone = function (ret) {
-    if (ret == "idle") {
-        $.ajax({
-            url: basicURL + "cgi/query",
-            cache: false,
-            error: onHttpError,
-            success: onQueryDone
-        });
-    } else {
-        $("#debug_msg").html("其他人正在使用，请刷新重试！");   
-    }
-}
 var onQueryDone = function (ret) {
     $("#btn_play").button('enable');
     
     $("#resolution-choice").empty();
     var resList = ret.split("|");
-    for(var i = 0; i < resList.length; i++) {
+    currentSize.width = resList[0].split("x")[0];
+    currentSize.height = resList[0].split("x")[1];
+    var currentSelect = -1;
+    for(var i = 1; i < resList.length; i++) {
         var res = resList[i].split("x");
         var newRes = new CameraSize();
         newRes.width = res[0];
         newRes.height = res[1];    
         supportedSize.push(newRes);
-        var newOption = "<option value='" + i + "'>" + resList[i] + "</option>";
-        $("#resolution-choice").append(newOption);
+        if ( newRes.width == currentSize.width  && newRes.height == currentSize.height) {
+            currentSelect = i;
+            var newOption = "<option value='" + (i-1) + "'>" + resList[i] + "</option>";
+            $("#resolution-choice").append(newOption);
+        }
+    }
+    for(var i = 1; i < resList.length; i++) {
+        if ( currentSelect != i) {
+            var newOption = "<option value='" + (i-1) + "'>" + resList[i] + "</option>";
+            $("#resolution-choice").append(newOption);
+        }
     }
     $("#resolution-choice").selectmenu('refresh');
+    $("#resolution-choice").bind("change", doChangeRes);  
 
     $("#debug_msg").html("连接成功");
-}
-
-var onPlayDone = function (ret) {
-    if ( ret == "BUSY") {
-        $("#debug_msg").html("连接视频错误，请刷新重试！");   
-        $("#btn_play").button('disable');
-    } else {
-        $("#debug_msg").html("正在播放...");   
-        $("#btn_play").val("停止播放");
-        $("#btn_play").button("refresh");
-    }
 }
 
 var onHttpError = function () {
@@ -64,17 +54,10 @@ var onHttpError = function () {
 }
 
 var playClick = function () {
-    var resIndex = $("#resolution-choice").val();
-    var str = "wid=" + supportedSize[resIndex].width;
-    str = str + "&hei=" + supportedSize[resIndex].height;
-    $.ajax({    
-    url: basicURL + "cgi/start",
-        data: str, 
-        cache: false,
-        error: onHttpError,
-        success: onPlayDone
-    });
-};
+}
+
+var doChangeRes = function () {
+}
 
 $("#page_main").live("pageinit", function() {
     basicURL = $(location).attr('href');
@@ -91,12 +74,11 @@ $("#page_main").live("pageinit", function() {
     $("#btn_play").bind("click", playClick);
 
     $.ajax({
-        url: basicURL + "cgi/status",
+        url: basicURL + "cgi/query",
         cache: false,
         error: onHttpError,
-        success: onStausDone
+        success: onQueryDone
     });
 
 });
-
 

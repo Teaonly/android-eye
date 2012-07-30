@@ -91,7 +91,7 @@ public class CameraView implements SurfaceHolder.Callback{
         Camera.Parameters p = camera_.getParameters();        
        
         supportedSizes = p.getSupportedPreviewSizes();
-        procSize_ = supportedSizes.get(1);
+        procSize_ = supportedSizes.get(3);
         p.setPreviewSize(procSize_.width, procSize_.height);
         
         camera_.setParameters(p);

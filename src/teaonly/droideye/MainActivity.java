@@ -29,6 +29,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Paint;
+import android.graphics.YuvImage;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
@@ -55,6 +56,11 @@ public class MainActivity extends Activity
     }
 
     AppState appState = AppState.IDLE;
+    boolean inProcessing = false;
+    EncodingThread encThread = null;
+    
+    public byte[] preFrame = new byte[1024*1024*8];
+    
     TeaServer webServer = null;
     private CameraView cameraView_;
     private OverlayView overlayView_;
@@ -177,6 +183,20 @@ public class MainActivity extends Activity
             return false;
         }
     }
+   
+    private void waitCompleteLastFrame() { 
+        if ( encThread == null)
+            return;
+
+        if( encThread.isAlive() ){
+            try {
+                encThread.join();
+                encThread = null;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }   
+        }   
+    }    
 
     private OnClickListener exitAction = new OnClickListener() {
         @Override
@@ -186,10 +206,22 @@ public class MainActivity extends Activity
     };
    
     private PreviewCallback previewCb_ = new PreviewCallback() {
-        public void onPreviewFrame(byte[] frame, Camera c) { 
-        }    
+        public void onPreviewFrame(byte[] frame, Camera c) {
+            if ( !inProcessing ) {
+                inProcessing = true;
+           
+                int picWidth = cameraView_.Width();
+                int picHeight = cameraView_.Height(); 
+                ByteBuffer bbuffer = ByteBuffer.wrap(frame); 
+                bbuffer.get(preFrame, 0, picWidth*picHeight + picWidth*picHeight/2);
+                               
+                waitCompleteLastFrame(); 
+                encThread = new EncodingThread();
+                encThread.start(); 
+            }
+        }
     };
-     
+    
     private TeaServer.CommonGatewayInterface doQuery = new TeaServer.CommonGatewayInterface () {
         @Override
         public String run(Properties parms) {
@@ -242,5 +274,25 @@ public class MainActivity extends Activity
             return null;
         }
     }; 
- 
+    
+
+    private class EncodingThread extends Thread{
+        @Override
+        public void run() {
+            /*
+            YuvImage newImage = new YuvImage(preFrame, ImageFormat.NV21, picWidth, picHeight, null);
+            codedBuffer.reset();
+            boolean ret = newImage.compressToJpeg( new Rect(0,0,picWidth,picHeight), 100, codedBuffer);
+            */            
+            inProcessing = false;
+        }
+    }
+    
+    /*
+    private class VideoFrame {
+        public int flags;        
+        public ByteArrayOutputStream;
+    }
+    */
+
 }

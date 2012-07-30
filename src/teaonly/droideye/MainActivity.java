@@ -181,7 +181,6 @@ public class MainActivity extends Activity
    
     private PreviewCallback previewCb_ = new PreviewCallback() {
         public void onPreviewFrame(byte[] frame, Camera c) { 
-            Log.d(TAG,">>>>>New Frame>>>>>"); 
         }    
     };
      
@@ -228,8 +227,9 @@ public class MainActivity extends Activity
             if ( appState == AppState.IDLE) {
                 int wid = Integer.parseInt(parms.getProperty("wid")); 
                 int hei = Integer.parseInt(parms.getProperty("hei"));
-                cameraView_.setupCamera(wid, hei); 
-                cameraView_.SetPreview( previewCb_ );
+                cameraView_.StopPreview();
+                cameraView_.setupCamera(wid, hei, previewCb_);
+                cameraView_.StartPreview();
                 appState = AppState.STREAMING;
                 return "OK";
             } else {

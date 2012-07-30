@@ -50,13 +50,6 @@ public class CameraView implements SurfaceHolder.Callback{
         cameraReadyCb_ = cb;
     }
 
-    public void SetPreview(PreviewCallback cb) {
-        if ( camera_ == null)
-            return;
-
-        camera_.setPreviewCallback(cb);
-    }
-    
     public void StartPreview(){
         if ( camera_ == null)
             return;
@@ -81,8 +74,7 @@ public class CameraView implements SurfaceHolder.Callback{
         }
     }
     
-    public void setupCamera(int wid, int hei) {
-        camera_.stopPreview();
+    public void setupCamera(int wid, int hei, PreviewCallback cb) {
         procSize_.width = wid;
         procSize_.height = hei;
         
@@ -90,7 +82,7 @@ public class CameraView implements SurfaceHolder.Callback{
         p.setPreviewSize(procSize_.width, procSize_.height);
         camera_.setParameters(p);
         
-        camera_.startPreview();
+        camera_.setPreviewCallback(cb);
     }
 
     private void setupCamera() {

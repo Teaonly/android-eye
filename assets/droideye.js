@@ -25,12 +25,11 @@ var onStausDone = function (ret) {
             success: onQueryDone
         });
     } else {
-        $("#debug_msg").html("其他人正在使用，请刷新重试！" + ret);   
+        $("#debug_msg").html("其他人正在使用，请刷新重试！");   
     }
 }
 var onQueryDone = function (ret) {
-    $("#btn_play").removeClass('ui-disabled');
-    $("#btn_play").bind("click", playClick);
+    $("#btn_play").button('enable');
     
     $("#resolution-choice").empty();
     var resList = ret.split("|");
@@ -51,15 +50,17 @@ var onQueryDone = function (ret) {
 var onPlayDone = function (ret) {
     if ( ret == "BUSY") {
         $("#debug_msg").html("连接视频错误，请刷新重试！");   
-        $("#btn_play").addClass('ui-disabled');               
+        $("#btn_play").button('disable');
     } else {
         $("#debug_msg").html("正在播放...");   
+        $("#btn_play").val("停止播放");
+        $("#btn_play").button("refresh");
     }
 }
 
 var onHttpError = function () {
     $("#debug_msg").html("连接视频错误，请刷新重试！");   
-    $("#btn_play").addClass('ui-disabled');        
+    $("#btn_play").button('disable'); 
 }
 
 var playClick = function () {
@@ -86,8 +87,9 @@ $("#page_main").live("pageinit", function() {
     $("#video_plane").width(planeWidth);
     $("#video_plane").height(planeHeight);
 
-    $("#btn_play").addClass('ui-disabled');
-    
+    $("#btn_play").button('disable');
+    $("#btn_play").bind("click", playClick);
+
     $.ajax({
         url: basicURL + "cgi/status",
         cache: false,

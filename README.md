@@ -3,13 +3,13 @@ android-eye
 
 Change your android phone to a surveillance web camera.
 
-= Specifications =
+# Specifications #
 ---------------
 *  Support Mjpeg streaming and audio 
 *  Build-in web service, you can see the video via browser in pc and another phone
 *  Support motion detect and publish alrm message to SNS
 *  Support router auto config, you can access camera over internet
 
-= Update =
+# Update #
 -------
 *  2012-07-26  creating project

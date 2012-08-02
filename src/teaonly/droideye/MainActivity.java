@@ -288,11 +288,4 @@ public class MainActivity extends Activity
         }
     }
     
-    /*
-    private class VideoFrame {
-        public int flags;        
-        public ByteArrayOutputStream;
-    }
-    */
-
 }

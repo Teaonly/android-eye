@@ -176,7 +176,7 @@ public class MainActivity extends Activity
                 webServer = new TeaServer(8080, this); 
                 webServer.registerCGI("/cgi/query", doQuery);
                 webServer.registerCGI("/cgi/setup", doSetup);
-                webServer.registerCGI("/stream/capture.jpg", doCapture);
+                webServer.registerCGI("/stream/live.jpg", doCapture);
             }catch (IOException e){
                 webServer = null;
             }
@@ -272,8 +272,6 @@ public class MainActivity extends Activity
                 return null;
             }
 
-            Log.d("TEAONLY", "Get a free video frame!");
-            
             // compress yuv to jpeg
             int picWidth = cameraView_.Width();
             int picHeight = cameraView_.Height(); 
@@ -288,15 +286,11 @@ public class MainActivity extends Activity
             } 
             inProcessing = false;
 
-            Log.d("TEAONLY", "Compress yuv to jpeg ret = " + ret);
             // compress success, return ok
             if ( ret == true)  {
                 parms.setProperty("mime", "image/jpeg");
-                try{
-                    Log.d("TEAONLY", "Jpeg streaming size = " + targetFrame.getInputStream().available() );
-                } catch ( IOException e) {
-                }
-                return targetFrame.getInputStream();
+                InputStream ins = targetFrame.getInputStream();
+                return ins;
             }
             // send 503 error
             targetFrame.release();

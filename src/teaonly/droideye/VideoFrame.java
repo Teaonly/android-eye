@@ -66,6 +66,22 @@ class VideoFrame extends OutputStream {
             return currentLength - rIndex;                 
         }   
 
+        @Override
+        public int read (byte[] outBuffer, int offset, int length) throws IOException {
+            int len = length;
+            if ( length > available() )
+                len = available();
+            if ( len == 0)
+                return 0;
+            try{
+                System.arraycopy(buffer, rIndex, outBuffer, offset, len);
+            }catch(Exception ex) {
+                return -1;
+            }
+            rIndex += len;
+            return len;
+        }
+
         @Override 
         public void close() throws IOException{
             rIndex = 0;

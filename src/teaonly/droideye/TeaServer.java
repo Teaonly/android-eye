@@ -7,7 +7,7 @@ import android.util.Log;
 
 public class TeaServer extends NanoHTTPD
 {
-    static final String TAG="PPCAM";
+    static final String TAG="TEAONLY";
     
     public TeaServer(int port, Context ctx) throws IOException {
         super(port, ctx.getAssets());
@@ -48,7 +48,7 @@ public class TeaServer extends NanoHTTPD
         Response res = new Response( HTTP_OK, mime, ins);
         res.addHeader( "ETag", etag);
         res.isStreaming = true; 
-
+        
         return res;
     }
 

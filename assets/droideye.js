@@ -16,6 +16,26 @@ var currentSize = new CameraSize();
 //////////////////////////////////////////////
 // Global function define
 //////////////////////////////////////////////
+var onImageLoadOK = function() {
+    var wid = 0;
+    var hei = 0;
+    if ( planeHeight * currentSize.width / currentSize.height > planeWidth) {
+        wid = planeWidth;
+        hei = math.round(planeWidth * currentSize.height / currentSize.width); 
+    } else {
+        hei = planeHeight;
+        wid = planeHeight * currentSize.width / currentSize.height;  
+    }
+    $("#live_image").width(wid);
+    $("#live_image").height(hei);
+    if ( inStreaming == true)
+        setTimeout(refreshLive, 50);    
+};
+var onImageLoadError = function() {
+    if ( inStreaming == true)
+        setTimeout(refreshLive, 50);    
+};
+
 var onQueryDone = function (ret) {
     $("#btn_play").button('enable');
     
@@ -46,19 +66,29 @@ var onQueryDone = function (ret) {
     $("#resolution-choice").bind("change", doChangeRes);  
 
     $("#debug_msg").html("连接成功");
-}
+};
 
 var onHttpError = function () {
     $("#debug_msg").html("连接视频错误，请刷新重试！");   
     $("#btn_play").button('disable'); 
-}
+};
+
+var refreshLive = function() {
+    $("#live_image").load(onImageLoadOK).error(onImageLoadError).attr("src", basicURL + "stream/live.jpg"); 
+};
 
 var playClick = function () {
-    $("#live_image").attr("src", basicURL + "stream/capture.jpg"); 
-}
+    if  ( inStreaming == false) {
+        inStreaming = true;
+        $("#btn_play").val("停止播放").button("refresh");
+        refreshLive();
+    } else {
+        $("#btn_play").val("开始播放");
+    }
+};
 
 var doChangeRes = function () {
-}
+};
 
 $("#page_main").live("pageinit", function() {
     basicURL = $(location).attr('href');
@@ -68,8 +98,8 @@ $("#page_main").live("pageinit", function() {
     planeHeight = Math.round( screenHeight * 0.5);
     planeWidth = Math.round( screenWidth * 0.80);
 
-    $("#video_plane").width(planeWidth);
     $("#video_plane").height(planeHeight);
+    $("#video_plane").width(planeWidth);
 
     $("#btn_play").button('disable');
     $("#btn_play").bind("click", playClick);

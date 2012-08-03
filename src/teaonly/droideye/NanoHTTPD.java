@@ -833,7 +833,7 @@ public class NanoHTTPD
                         while (true)
                         {
                             int read = data.read( buff, 0, 2048);
-                            if (read < 0)	
+                            if (read <= 0)	
                                 break;
                             if (read > 0)
                                 out.write( buff, 0, read );
@@ -1107,14 +1107,12 @@ public class NanoHTTPD
             uri = uri + "index.html";    
         }
         
-        Log.d("TEAONLY", ">>>> URI = " + uri);
 
         InputStream assetFile = null;
         try {
             assetFile = myAssets.open(uri);
         } catch ( IOException ex) {
             assetFile = null;
-            Log.d("TEAONLY", ">>>> Open Error:" + ex);
         }
         if ( res == null && assetFile == null) {
             res = new Response( HTTP_NOTFOUND, MIME_PLAINTEXT,

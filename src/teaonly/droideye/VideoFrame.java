@@ -6,20 +6,10 @@ class VideoFrame extends OutputStream {
     private byte[] buffer;
     private int bufferLength;
     private int currentLength;
-    
     private int flag;
 
     public VideoFrame (int maxSize) {
         super();
-        buffer = new byte[maxSize];
-        bufferLength = maxSize;
-        currentLength = 0;
-        flag = 0;
-    }
-
-    public VideoFrame() {
-        super();
-        final int maxSize = 1024*1024;
         buffer = new byte[maxSize];
         bufferLength = maxSize;
         currentLength = 0;
@@ -45,30 +35,12 @@ class VideoFrame extends OutputStream {
         }
     }
 
-    public ByteArrayInputStream getByteInputStream() {
-        ByteArrayInputStream bin = new ByteArrayInputStream(buffer, 0, currentLength);
-        return bin;
+    public InputStream getInputStream() {
+        return videoInputStream;
     }
 
     public void reset() {
         currentLength = 0;
-    }
-
-    @Override 
-    public void write(byte[] srcBuffer, int offset, int count) throws IOException {
-        IOException ioEx = null;
-        try {
-            System.arraycopy(srcBuffer, offset, buffer, currentLength, count);
-        } catch (IndexOutOfBoundsException ex) {
-            ioEx = new IOException("Buffer overflow");
-        } catch (ArrayStoreException ex) {
-            ioEx = new IOException("Parameter error");
-        } catch (NullPointerException ex) {
-            ioEx = new IOException("Parameter error");
-        }
-        if ( ioEx != null)
-            throw ioEx;
-        currentLength += count;
     }
 
     @Override
@@ -77,10 +49,39 @@ class VideoFrame extends OutputStream {
             IOException ex = new IOException("Buffer overflow");
             throw ex;
         } 
-
         buffer[currentLength] = (byte)(oneByte & 0xFF);
         currentLength++;
     }
-    
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+    }
+
+    private InputStream videoInputStream = new InputStream() {
+        private int rIndex = 0;
+        
+        @Override
+        public int available() throws IOException{
+            return currentLength - rIndex;                 
+        }   
+
+        @Override 
+        public void close() throws IOException{
+            rIndex = 0;
+            release();
+        }
+        
+        @Override
+        public int read() throws IOException{
+            if ( rIndex >= currentLength) {
+                IOException ex = new IOException("Buffer overflow");
+                throw ex;
+            }
+            int ret = buffer[rIndex];
+            rIndex++;
+            return ret;     
+        }
+    };
 } 
 

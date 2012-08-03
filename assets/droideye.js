@@ -54,6 +54,7 @@ var onHttpError = function () {
 }
 
 var playClick = function () {
+    $("#live_image").attr("src", basicURL + "stream/capture.jpg"); 
 }
 
 var doChangeRes = function () {

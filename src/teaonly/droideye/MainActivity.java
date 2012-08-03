@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.lang.System;
 import java.lang.Thread;
 import java.util.*;
@@ -27,6 +28,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.Paint;
 import android.graphics.YuvImage;
@@ -58,7 +60,7 @@ public class MainActivity extends Activity
     AppState appState = AppState.IDLE;
     boolean inProcessing = false;
     final int maxVideoNumber=5;
-    VideoFrame[] videoFrames;
+    VideoFrame[] videoFrames = new VideoFrame[maxVideoNumber];
     byte[] preFrame = new byte[1024*1024*4];
     
     TeaServer webServer = null;
@@ -83,7 +85,9 @@ public class MainActivity extends Activity
         btnExit.setOnClickListener(exitAction);
         tvMessage = (TextView)findViewById(R.id.tv_message);
         
-        videoFrames = new VideoFrame[maxVideoNumber];
+        for(int i = 0; i < maxVideoNumber; i++) {
+            videoFrames[i] = new VideoFrame(1024*1024);        
+        }    
 
         initCamera();
     }
@@ -172,7 +176,7 @@ public class MainActivity extends Activity
                 webServer = new TeaServer(8080, this); 
                 webServer.registerCGI("/cgi/query", doQuery);
                 webServer.registerCGI("/cgi/setup", doSetup);
-                webServer.registerCGI("/stream/capture", doCapture);
+                webServer.registerCGI("/stream/capture.jpg", doCapture);
             }catch (IOException e){
                 webServer = null;
             }
@@ -202,20 +206,12 @@ public class MainActivity extends Activity
                 int picHeight = cameraView_.Height(); 
                 ByteBuffer bbuffer = ByteBuffer.wrap(frame); 
                 bbuffer.get(preFrame, 0, picWidth*picHeight + picWidth*picHeight/2);
-                               
+                
                 inProcessing = false;
             }
         }
     };
     
-    
-   
-    /*
-    YuvImage newImage = new YuvImage(preFrame, ImageFormat.NV21, picWidth, picHeight, null);
-    codedBuffer.reset();
-    boolean ret = newImage.compressToJpeg( new Rect(0,0,picWidth,picHeight), 100, codedBuffer);
-    */
-
     private TeaServer.CommonGatewayInterface doQuery = new TeaServer.CommonGatewayInterface () {
         @Override
         public String run(Properties parms) {
@@ -250,7 +246,7 @@ public class MainActivity extends Activity
                 return "BUSY";
             }
         }   
-        
+ 
         @Override 
         public InputStream streaming(Properties parms) {
             return null;
@@ -260,6 +256,11 @@ public class MainActivity extends Activity
     private TeaServer.CommonGatewayInterface doCapture = new TeaServer.CommonGatewayInterface () {
         @Override
         public String run(Properties parms) {
+           return null;
+        }   
+        
+        @Override 
+        public InputStream streaming(Properties parms) {
             VideoFrame targetFrame = null;
             for(int i = 0; i < maxVideoNumber; i++) {
                 if ( videoFrames[i].acquire() ) {
@@ -270,14 +271,37 @@ public class MainActivity extends Activity
             if ( targetFrame == null) {
                 return null;
             }
+
+            Log.d("TEAONLY", "Get a free video frame!");
             
-            return null;
-        }   
-        
-        @Override 
-        public InputStream streaming(Properties parms) {
+            // compress yuv to jpeg
+            int picWidth = cameraView_.Width();
+            int picHeight = cameraView_.Height(); 
+            YuvImage newImage = new YuvImage(preFrame, ImageFormat.NV21, picWidth, picHeight, null);
+            targetFrame.reset();
+            boolean ret;
+            inProcessing = true;
+            try{
+                ret = newImage.compressToJpeg( new Rect(0,0,picWidth,picHeight), 30, targetFrame);
+            }catch (Exception ex) {
+                ret = false;    
+            } 
+            inProcessing = false;
+
+            Log.d("TEAONLY", "Compress yuv to jpeg ret = " + ret);
+            // compress success, return ok
+            if ( ret == true)  {
+                parms.setProperty("mime", "image/jpeg");
+                try{
+                    Log.d("TEAONLY", "Jpeg streaming size = " + targetFrame.getInputStream().available() );
+                } catch ( IOException e) {
+                }
+                return targetFrame.getInputStream();
+            }
+            // send 503 error
+            targetFrame.release();
+
             return null;
         }
     }; 
-    
 }

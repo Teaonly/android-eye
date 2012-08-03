@@ -17,6 +17,7 @@ public class TeaServer extends NanoHTTPD
         super(port, new File(wwwroot).getAbsoluteFile() );
     }
 
+    @Override
     public Response serve( String uri, String method, Properties header, Properties parms, Properties files ) {
         Log.d(TAG, "httpd request >>" + method + " '" + uri + "' " + "   " + parms);
     
@@ -63,10 +64,14 @@ public class TeaServer extends NanoHTTPD
         Response res = new Response( HTTP_OK, MIME_PLAINTEXT, msg);
         return res;
     }
-
+    
+    @Override
     public void serveDone(Response r) {
-        if (r.isStreaming){
-            
+        if ( r.isStreaming ) { 
+            try{
+                r.data.close();
+            }catch(IOException ex) {
+            }
         }
     } 
 

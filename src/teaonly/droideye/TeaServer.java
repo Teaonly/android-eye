@@ -46,7 +46,7 @@ public class TeaServer extends NanoHTTPD
             mime = "application/octet-stream";
         Response res = new Response( HTTP_OK, mime, ins);
         res.addHeader( "ETag", etag);
-        res.isStreaming = false; 
+        res.isStreaming = true; 
 
         return res;
     }
@@ -64,6 +64,11 @@ public class TeaServer extends NanoHTTPD
         return res;
     }
 
+    public void serveDone(Response r) {
+        if (r.isStreaming){
+            
+        }
+    } 
 
     public static interface CommonGatewayInterface {
         public String run(Properties parms); 

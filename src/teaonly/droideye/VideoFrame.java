@@ -17,23 +17,41 @@ class VideoFrame extends OutputStream {
         flag = 0;
     }
 
-    public reset() {
+    public VideoFrame() {
+        super();
+        final int maxSize = 1024*1024;
+        buffer = new byte[maxSize];
+        bufferLength = maxSize;
         currentLength = 0;
         flag = 0;
     }
 
-    public void releaseByteInputStream() {
-        synchronized {
-            flag--;
+    public boolean acquire() {
+        synchronized(this) {
+            if ( flag == 0) {
+                flag = 1;
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    public void release() {
+        synchronized(this) {
+            if ( flag == 1) {
+                flag = 0;
+            }
         }
     }
 
     public ByteArrayInputStream getByteInputStream() {
         ByteArrayInputStream bin = new ByteArrayInputStream(buffer, 0, currentLength);
-        synchronized {
-            flag++;
-        }
         return bin;
+    }
+
+    public void reset() {
+        currentLength = 0;
     }
 
     @Override 

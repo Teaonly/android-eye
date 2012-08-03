@@ -57,9 +57,9 @@ public class MainActivity extends Activity
 
     AppState appState = AppState.IDLE;
     boolean inProcessing = false;
-    EncodingThread encThread = null;
-    
-    public byte[] preFrame = new byte[1024*1024*8];
+    final int maxVideoNumber=5;
+    VideoFrame[] videoFrames;
+    byte[] preFrame = new byte[1024*1024*4];
     
     TeaServer webServer = null;
     private CameraView cameraView_;
@@ -83,6 +83,8 @@ public class MainActivity extends Activity
         btnExit.setOnClickListener(exitAction);
         tvMessage = (TextView)findViewById(R.id.tv_message);
         
+        videoFrames = new VideoFrame[maxVideoNumber];
+
         initCamera();
     }
     
@@ -184,20 +186,6 @@ public class MainActivity extends Activity
         }
     }
    
-    private void waitCompleteLastFrame() { 
-        if ( encThread == null)
-            return;
-
-        if( encThread.isAlive() ){
-            try {
-                encThread.join();
-                encThread = null;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }   
-        }   
-    }    
-
     private OnClickListener exitAction = new OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -215,13 +203,19 @@ public class MainActivity extends Activity
                 ByteBuffer bbuffer = ByteBuffer.wrap(frame); 
                 bbuffer.get(preFrame, 0, picWidth*picHeight + picWidth*picHeight/2);
                                
-                waitCompleteLastFrame(); 
-                encThread = new EncodingThread();
-                encThread.start(); 
+                inProcessing = false;
             }
         }
     };
     
+    
+   
+    /*
+    YuvImage newImage = new YuvImage(preFrame, ImageFormat.NV21, picWidth, picHeight, null);
+    codedBuffer.reset();
+    boolean ret = newImage.compressToJpeg( new Rect(0,0,picWidth,picHeight), 100, codedBuffer);
+    */
+
     private TeaServer.CommonGatewayInterface doQuery = new TeaServer.CommonGatewayInterface () {
         @Override
         public String run(Properties parms) {
@@ -266,6 +260,17 @@ public class MainActivity extends Activity
     private TeaServer.CommonGatewayInterface doCapture = new TeaServer.CommonGatewayInterface () {
         @Override
         public String run(Properties parms) {
+            VideoFrame targetFrame = null;
+            for(int i = 0; i < maxVideoNumber; i++) {
+                if ( videoFrames[i].acquire() ) {
+                    targetFrame = videoFrames[i];
+                }    
+            }
+            // return 503 internal error
+            if ( targetFrame == null) {
+                return null;
+            }
+            
             return null;
         }   
         
@@ -274,18 +279,5 @@ public class MainActivity extends Activity
             return null;
         }
     }; 
-    
-
-    private class EncodingThread extends Thread{
-        @Override
-        public void run() {
-            /*
-            YuvImage newImage = new YuvImage(preFrame, ImageFormat.NV21, picWidth, picHeight, null);
-            codedBuffer.reset();
-            boolean ret = newImage.compressToJpeg( new Rect(0,0,picWidth,picHeight), 100, codedBuffer);
-            */            
-            inProcessing = false;
-        }
-    }
     
 }

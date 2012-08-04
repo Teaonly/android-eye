@@ -292,4 +292,11 @@ public class MainActivity extends Activity
             return null;
         }
     }; 
+
+    private class AnalyseThread extends Thread {
+        @Override
+        public void run() {          
+             
+        }
+    }
 }

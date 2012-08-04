@@ -28,12 +28,12 @@ var onImageLoadOK = function() {
     }
     $("#live_image").width(wid);
     $("#live_image").height(hei);
+
     if ( inStreaming == true)
-        setTimeout(refreshLive, 50);    
+        setTimeout(refreshLive, 333);  
 };
+
 var onImageLoadError = function() {
-    if ( inStreaming == true)
-        setTimeout(refreshLive, 50);    
 };
 
 var onQueryDone = function (ret) {
@@ -54,6 +54,7 @@ var onQueryDone = function (ret) {
             currentSelect = i;
             var newOption = "<option value='" + (i-1) + "'>" + resList[i] + "</option>";
             $("#resolution-choice").append(newOption);
+            break;
         }
     }
     for(var i = 1; i < resList.length; i++) {
@@ -74,20 +75,34 @@ var onHttpError = function () {
 };
 
 var refreshLive = function() {
-    $("#live_image").load(onImageLoadOK).error(onImageLoadError).attr("src", basicURL + "stream/live.jpg"); 
+    $("#live_image").one("load", onImageLoadOK).error(onImageLoadError).attr("src", basicURL + "stream/live.jpg"); 
 };
 
 var playClick = function () {
     if  ( inStreaming == false) {
         inStreaming = true;
         $("#btn_play").val("停止播放").button("refresh");
+        $("#resolution-choice").selectmenu("disable");
         refreshLive();
     } else {
-        $("#btn_play").val("开始播放");
+        inStreaming = false;
+        $("#btn_play").val("开始播放").button("refresh");
+        $("#resolution-choice").selectmenu("enable");
     }
 };
 
+var onSetupOK = function() {
+    var targetIndex = $("#resolution-choice").val();
+    currentSize = supportedSize[targetIndex]; 
+};
+
 var doChangeRes = function () {
+    $.ajax({
+        url: basicURL + "cgi/setup",
+        cache: false,
+        error: onHttpError,
+        success: onSetupOK
+    });
 };
 
 $("#page_main").live("pageinit", function() {

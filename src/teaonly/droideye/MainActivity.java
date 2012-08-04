@@ -269,6 +269,7 @@ public class MainActivity extends Activity
             }
             // return 503 internal error
             if ( targetFrame == null) {
+                Log.d("TEAONLY", "No free videoFrame found!");
                 return null;
             }
 

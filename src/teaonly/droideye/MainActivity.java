@@ -53,15 +53,11 @@ import android.widget.TextView;
 public class MainActivity extends Activity 
     implements View.OnTouchListener, CameraView.CameraReadyCallback, OverlayView.UpdateDoneCallback{
     private static final String TAG = "TEAONLY";
-    private enum AppState{
-        IDLE, STREAMING
-    }
 
-    AppState appState = AppState.IDLE;
     boolean inProcessing = false;
-    final int maxVideoNumber=5;
+    final int maxVideoNumber=3;
     VideoFrame[] videoFrames = new VideoFrame[maxVideoNumber];
-    byte[] preFrame = new byte[1024*1024*4];
+    byte[] preFrame = new byte[1024*1024*8];
     
     TeaServer webServer = null;
     private CameraView cameraView_;
@@ -86,7 +82,7 @@ public class MainActivity extends Activity
         tvMessage = (TextView)findViewById(R.id.tv_message);
         
         for(int i = 0; i < maxVideoNumber; i++) {
-            videoFrames[i] = new VideoFrame(1024*1024);        
+            videoFrames[i] = new VideoFrame(1024*1024*4);        
         }    
 
         initCamera();
@@ -206,7 +202,7 @@ public class MainActivity extends Activity
                 int picHeight = cameraView_.Height(); 
                 ByteBuffer bbuffer = ByteBuffer.wrap(frame); 
                 bbuffer.get(preFrame, 0, picWidth*picHeight + picWidth*picHeight/2);
-                
+
                 inProcessing = false;
             }
         }
@@ -235,16 +231,13 @@ public class MainActivity extends Activity
     private TeaServer.CommonGatewayInterface doSetup = new TeaServer.CommonGatewayInterface () {
         @Override
         public String run(Properties parms) {
-            if ( appState == AppState.IDLE) {
-                int wid = Integer.parseInt(parms.getProperty("wid")); 
-                int hei = Integer.parseInt(parms.getProperty("hei"));
-                cameraView_.StopPreview();
-                cameraView_.setupCamera(wid, hei, previewCb_);
-                cameraView_.StartPreview();
-                return "OK";
-            } else {
-                return "BUSY";
-            }
+            int wid = Integer.parseInt(parms.getProperty("wid")); 
+            int hei = Integer.parseInt(parms.getProperty("hei"));
+            Log.d("TEAONLY", ">>>>>>>run in doSetup wid = " + wid + " hei=" + hei);
+            cameraView_.StopPreview();
+            cameraView_.setupCamera(wid, hei, previewCb_);
+            cameraView_.StartPreview();
+            return "OK";
         }   
  
         @Override 

@@ -54,7 +54,6 @@ var onQueryDone = function (ret) {
             currentSelect = i;
             var newOption = "<option value='" + (i-1) + "'>" + resList[i] + "</option>";
             $("#resolution-choice").append(newOption);
-            break;
         }
     }
     for(var i = 1; i < resList.length; i++) {
@@ -97,10 +96,14 @@ var onSetupOK = function() {
 };
 
 var doChangeRes = function () {
+    var targetIndex = $("#resolution-choice").val();
+    var wid = supportedSize[targetIndex].width;
+    var hei = supportedSize[targetIndex].height; 
     $.ajax({
+        type: "GET",
         url: basicURL + "cgi/setup",
         cache: false,
-        error: onHttpError,
+        data: "wid=" + wid + "&hei=" + hei,
         success: onSetupOK
     });
 };
@@ -120,6 +123,7 @@ $("#page_main").live("pageinit", function() {
     $("#btn_play").bind("click", playClick);
 
     $.ajax({
+        type: "GET",
         url: basicURL + "cgi/query",
         cache: false,
         error: onHttpError,

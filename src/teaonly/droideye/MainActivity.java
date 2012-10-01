@@ -189,7 +189,7 @@ public class MainActivity extends Activity
     private OnClickListener exitAction = new OnClickListener() {
         @Override
         public void onClick(View v) {
-        
+            onPause();
         }   
     };
    

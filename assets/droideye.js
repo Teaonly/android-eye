@@ -30,7 +30,7 @@ var onImageLoadOK = function() {
     $("#live_image").height(hei);
 
     if ( inStreaming == true)
-        setTimeout(refreshLive, 333);  
+        setTimeout(refreshLive, 150);  
 };
 
 var onImageLoadError = function() {

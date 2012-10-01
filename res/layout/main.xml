@@ -49,6 +49,7 @@
                 android:gravity="center"
                 android:background="#88333333"
                 android:orientation="horizontal">
+                <!--
                 <Button 
                     android:id="@+id/btn_setup"
                     android:layout_height="wrap_content"
@@ -57,6 +58,7 @@
                     android:textSize="24dip"
                     android:textStyle="bold"            
                     android:text="@string/action_setup"/>
+                -->
                 <Button 
                     android:id="@+id/btn_exit"
                     android:layout_height="wrap_content"

@@ -65,11 +65,11 @@ var onQueryDone = function (ret) {
     $("#resolution-choice").selectmenu('refresh');
     $("#resolution-choice").bind("change", doChangeRes);  
 
-    $("#debug_msg").html("连接成功");
+    $("#debug_msg").html("Connected");
 };
 
 var onHttpError = function () {
-    $("#debug_msg").html("连接视频错误，请刷新重试！");   
+    $("#debug_msg").html("Can't connected with phone, please refresh web page!");   
     $("#btn_play").button('disable'); 
 };
 
@@ -80,12 +80,12 @@ var refreshLive = function() {
 var playClick = function () {
     if  ( inStreaming == false) {
         inStreaming = true;
-        $("#btn_play").val("停止播放").button("refresh");
+        $("#btn_play").val("Stop").button("refresh");
         $("#resolution-choice").selectmenu("disable");
         refreshLive();
     } else {
         inStreaming = false;
-        $("#btn_play").val("开始播放").button("refresh");
+        $("#btn_play").val("Play").button("refresh");
         $("#resolution-choice").selectmenu("enable");
     }
 };

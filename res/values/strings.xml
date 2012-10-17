@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">视讯监视</string>
+    <string name="app_name">IP Camera</string>
 
-    <string name="action_setup">设置服务</string>
-    <string name="action_exit">关闭程序</string>
+    <string name="action_setup">Setup</string>
+    <string name="action_exit">Close</string>
 
-    <string name="msg_access">PC上打开</string>
-    <string name="msg_error">错误：没有可用的网络连接，请启动WiFi</string>
+    <string name="msg_access">Open in PC </string>
+    <string name="msg_error">Error: Please enable wifi</string>
 </resources>

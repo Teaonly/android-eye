@@ -55,7 +55,7 @@ public class MainActivity extends Activity
     private static final String TAG = "TEAONLY";
 
     boolean inProcessing = false;
-    final int maxVideoNumber=3;
+    final int maxVideoNumber = 2;
     VideoFrame[] videoFrames = new VideoFrame[maxVideoNumber];
     byte[] preFrame = new byte[1024*1024*8];
     
@@ -73,7 +73,7 @@ public class MainActivity extends Activity
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         Window win = getWindow();
         win.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);    
-        win.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN); 
+        //win.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN); 
 
         setContentView(R.layout.main);
 

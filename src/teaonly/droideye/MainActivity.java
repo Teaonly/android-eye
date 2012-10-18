@@ -138,8 +138,8 @@ public class MainActivity extends Activity
         cameraView_.StopPreview(); 
         //cameraView_.Release();
     
-        System.exit(0);
-        //finish();
+        //System.exit(0);
+        finish();
     }  
     
     @Override

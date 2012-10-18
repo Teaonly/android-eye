@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">IP Camera</string>
+    <string name="app_name">Wifi Camera</string>
 
     <string name="action_setup">Setup</string>
     <string name="action_exit">Close</string>

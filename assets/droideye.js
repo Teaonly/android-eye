@@ -5,6 +5,7 @@ var planeWidth = 0;
 var planeHeight = 0;
 var basicURL = "";
 var inStreaming = false;
+var picCount = 0;
 
 function CameraSize () {
     this.width = 0;
@@ -30,7 +31,7 @@ var onImageLoadOK = function() {
     $("#live_image").height(hei);
 
     if ( inStreaming == true)
-        setTimeout(refreshLive, 150);  
+        setTimeout(refreshLive, 300);  
 };
 
 var onImageLoadError = function() {
@@ -74,7 +75,9 @@ var onHttpError = function () {
 };
 
 var refreshLive = function() {
-    $("#live_image").one("load", onImageLoadOK).error(onImageLoadError).attr("src", basicURL + "stream/live.jpg"); 
+    picCount = picCount + 1;
+    $("#live_image").attr("src", basicURL + "stream/live.jpg?id=" + picCount);
+    $("#live_image").waitForImages( onImageLoadOK );
 };
 
 var playClick = function () {

@@ -121,6 +121,7 @@ public class MainActivity extends Activity
     @Override
     public void onPause(){  
         super.onPause();
+        inProcessing = true;
         webServer.stop();
         cameraView_.StopPreview(); 
         cameraView_.Release();
@@ -130,6 +131,11 @@ public class MainActivity extends Activity
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        inProcessing = true;
+        webServer.stop();
+        cameraView_.StopPreview(); 
+        cameraView_.Release();
+        finish();
     }
 
     @Override 

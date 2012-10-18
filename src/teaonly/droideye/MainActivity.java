@@ -133,7 +133,8 @@ public class MainActivity extends Activity
     public void onPause(){  
         super.onPause();
         inProcessing = true;
-        webServer.stop();
+        if ( webServer != null)
+            webServer.stop();
         cameraView_.StopPreview(); 
         //cameraView_.Release();
     

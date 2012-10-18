@@ -5,6 +5,6 @@
     <string name="action_setup">Setup</string>
     <string name="action_exit">Close</string>
 
-    <string name="msg_access">Open in PC </string>
+    <string name="msg_access">Open URL in PC </string>
     <string name="msg_error">Error: Please enable wifi</string>
 </resources>

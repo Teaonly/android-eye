@@ -124,18 +124,15 @@ public class MainActivity extends Activity
         inProcessing = true;
         webServer.stop();
         cameraView_.StopPreview(); 
-        cameraView_.Release();
-        finish();
+        //cameraView_.Release();
+    
+        System.exit(0);
+        //finish();
     }  
     
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        inProcessing = true;
-        webServer.stop();
-        cameraView_.StopPreview(); 
-        cameraView_.Release();
-        finish();
     }
 
     @Override 

@@ -1,12 +1,16 @@
 android-eye
 ===========
 
-Change your android phone to a surveillance web camera.
+Change your android phone to a surveillance security camera.
+
+## Download ##
+You can download binrary from Google Play: 
+https://play.google.com/store/apps/details?id=teaonly.droideye 
 
 ## Specifications ##
 *  Support Mjpeg streaming and audio (viideo is OK, audio is in doing)
 *  Build-in web service, you can see the video via browser in pc and another phone (PC is ok, phone is not ready)
-*  Support motion detect and publish alrm message to SNS (not ready)
+*  Support motion detecting and publishing alarm messages to SNS (not ready)
 *  Support router auto config, you can access camera over internet (not ready)
 
 ## Update ##

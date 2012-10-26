@@ -68,15 +68,9 @@ var onQueryDone = function (ret) {
 
     // setup audio stuff
     /*
-    $("#audio_live_player").jPlayer({
-        ready: function () {
-                $(this).jPlayer("setMedia", {
-                    mp3: "/stream/live.mp3",
-                });
-            },
-            swfPath: "/res",
-            supplied: "mp3"
-    });
+    var oAudio = document.getElementById('live_audio_player');
+    oAudio.src = "live.mp3";
+    oAudio.play();
     */
 
     $("#debug_msg").html("Connected");
@@ -151,16 +145,7 @@ $("#page_main").live("pageinit", function() {
 //////////////////////////////////////////////
 // Top level code define
 //////////////////////////////////////////////
-/*
 $(document).ready(function(){
-    $("#audio_live_player").jPlayer({
-        ready: function () {
-                $(this).jPlayer("setMedia", {
-                    mp3: "/stream/live.mp3",
-                });
-            },
-            swfPath: "/res",
-            supplied: "mp3"
-    });
+
 });
-*/
+

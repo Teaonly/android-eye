@@ -132,6 +132,21 @@ $("#page_main").live("pageinit", function() {
         error: onHttpError,
         success: onQueryDone
     });
+});
 
+
+//////////////////////////////////////////////
+// Top level code define
+//////////////////////////////////////////////
+$(document).ready(function(){
+    $("#audio_live_player").jPlayer({
+        ready: function () {
+                $(this).jPlayer("setMedia", {
+                    mp3: "/stream/live.mp3",
+                });
+            },
+            swfPath: "/res",
+            supplied: "mp3"
+    });
 });
 

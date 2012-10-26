@@ -5,10 +5,12 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"> 
     <link rel="stylesheet" href="res/jquery.mobile-1.1.1.min.css" />
+    <link rel="stylesheet" href="res/skin/jplayer.blue.monday.css" />
     <link rel="stylesheet" href="extern.css">
     <script src="res/jquery-1.7.1.min.js"></script>
     <script src="res/jquery.mobile-1.1.1.min.js"></script>
     <script src="res/jquery.waitforimages.min.js"></script>
+    <script src="res/jquery.jplayer.min.js"></script>
     <script src="droideye.js"></script>
 </head> 
 <body> 
@@ -25,6 +27,21 @@
             <li>
                 <div class="live_image_box" id="video_plane">
                     <img id="live_image" src="images/black.png">
+                </div>
+            </li>
+            <li>
+                <div id="audio_live_player" class="jp-jplayer"></div>
+                <div id="jp_container_1" class="jp-audio center">
+                    <div class="jp-type-single">
+                        <div class="jp-gui jp-interface">
+                            <div class="jp-volume-bar">
+                                <div class="jp-volume-bar-value"></div>
+                            </div>
+                            <div class="jp-time-holder">
+                                <div class="jp-current-time"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </li> 
             <li data-role="fieldcontain" class="center">

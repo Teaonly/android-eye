@@ -153,17 +153,20 @@ public class MainActivity extends Activity
     }
 
     @Override 
-    public boolean onTouch(View v, MotionEvent evt) {
+    public boolean onTouch(View v, MotionEvent evt) { 
+        
+
         return false;
     }
   
     private void initAudio() {
         int minBufferSize = AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
-        int minTargetSize = 3 * 44100 * 2;      // 3 seconds buffer size
+        int minTargetSize = 2 * 44100 * 2;      // 2 seconds buffer size
         if (minTargetSize < minBufferSize) {
             minTargetSize = minBufferSize;
-         }
-
+        }
+        
+        Log.d(TAG, ">>>>>>> minBufferSize = " + minBufferSize + "   targetBuffersize = " + minTargetSize); 
         audioCapture_ = new AudioRecord(MediaRecorder.AudioSource.MIC,
                                         44100,
                                         AudioFormat.CHANNEL_IN_MONO,
@@ -207,6 +210,7 @@ public class MainActivity extends Activity
                 webServer.registerCGI("/cgi/query", doQuery);
                 webServer.registerCGI("/cgi/setup", doSetup);
                 webServer.registerCGI("/stream/live.jpg", doCapture);
+                webServer.registerCGI("/stream/live.mp3", doCapture);
             }catch (IOException e){
                 webServer = null;
             }

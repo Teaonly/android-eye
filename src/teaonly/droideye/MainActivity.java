@@ -37,6 +37,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.media.AudioFormat;
+import android.media.MediaRecorder;
+import android.media.AudioRecord;
 import android.text.format.Formatter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -66,6 +69,7 @@ public class MainActivity extends Activity
     
     TeaServer webServer = null;
     private CameraView cameraView_;
+    private AudioRecord audioCapture_ = null;
     private OverlayView overlayView_;
     private Button btnExit;
     private TextView tvMessage;
@@ -96,6 +100,7 @@ public class MainActivity extends Activity
             videoFrames[i] = new VideoFrame(1024*1024*4);        
         }    
 
+        initAudio();
         initCamera();
     }
     
@@ -151,7 +156,21 @@ public class MainActivity extends Activity
     public boolean onTouch(View v, MotionEvent evt) {
         return false;
     }
-   
+  
+    private void initAudio() {
+        int minBufferSize = AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
+        int minTargetSize = 3 * 44100 * 2;      // 3 seconds buffer size
+        if (minTargetSize < minBufferSize) {
+            minTargetSize = minBufferSize;
+         }
+
+        audioCapture_ = new AudioRecord(MediaRecorder.AudioSource.MIC,
+                                        44100,
+                                        AudioFormat.CHANNEL_IN_MONO,
+                                        AudioFormat.ENCODING_PCM_16BIT,
+                                        minTargetSize);
+    }
+
     private void initCamera() {
         SurfaceView cameraSurface = (SurfaceView)findViewById(R.id.surface_camera);
         cameraView_ = new CameraView(cameraSurface);        

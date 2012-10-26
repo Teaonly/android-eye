@@ -66,6 +66,19 @@ var onQueryDone = function (ret) {
     $("#resolution-choice").selectmenu('refresh');
     $("#resolution-choice").bind("change", doChangeRes);  
 
+    // setup audio stuff
+    /*
+    $("#audio_live_player").jPlayer({
+        ready: function () {
+                $(this).jPlayer("setMedia", {
+                    mp3: "/stream/live.mp3",
+                });
+            },
+            swfPath: "/res",
+            supplied: "mp3"
+    });
+    */
+
     $("#debug_msg").html("Connected");
 };
 
@@ -138,6 +151,7 @@ $("#page_main").live("pageinit", function() {
 //////////////////////////////////////////////
 // Top level code define
 //////////////////////////////////////////////
+/*
 $(document).ready(function(){
     $("#audio_live_player").jPlayer({
         ready: function () {
@@ -149,4 +163,4 @@ $(document).ready(function(){
             supplied: "mp3"
     });
 });
-
+*/

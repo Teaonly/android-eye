@@ -475,7 +475,7 @@ public class NanoHTTPD
 					sendError( HTTP_INTERNALERROR, "SERVER INTERNAL ERROR: Serve() returned a null response." );
 				else 
                     sendResponse( r.status, r.mimeType, r.header, r.data, r.isStreaming );
-
+                
 				in.close();
 				is.close();
                 
@@ -842,8 +842,6 @@ public class NanoHTTPD
                 }
                 out.flush();
                 out.close();
-				if ( data != null )
-					data.close();
 			}
 			catch( IOException ioe )
 			{

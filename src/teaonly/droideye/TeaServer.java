@@ -68,7 +68,7 @@ public class TeaServer extends NanoHTTPD
     @Override
     public void serveDone(Response r) {
        try{
-            if ( r.isStreaming && r.data.available() > 0) { 
+            if ( r.isStreaming ) { 
                 r.data.close();
             }
        } catch(IOException ex) {

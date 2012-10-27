@@ -1,5 +1,6 @@
 package teaonly.droideye;
 
+import android.util.Log;
 import java.io.*;
 
 class VideoFrame extends OutputStream {
@@ -85,7 +86,6 @@ class VideoFrame extends OutputStream {
         @Override 
         public void close() throws IOException{
             rIndex = 0;
-            reset();
             release();
         }
         

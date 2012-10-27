@@ -63,7 +63,7 @@ public class MainActivity extends Activity
     private AdView adView;
 
     boolean inProcessing = false;
-    final int maxVideoNumber = 2;
+    final int maxVideoNumber = 3;
     VideoFrame[] videoFrames = new VideoFrame[maxVideoNumber];
     byte[] preFrame = new byte[1024*1024*8];
     
@@ -97,7 +97,7 @@ public class MainActivity extends Activity
         tvMessage = (TextView)findViewById(R.id.tv_message);
         
         for(int i = 0; i < maxVideoNumber; i++) {
-            videoFrames[i] = new VideoFrame(1024*1024*4);        
+            videoFrames[i] = new VideoFrame(1024*1024*2);        
         }    
 
         initAudio();
@@ -296,7 +296,8 @@ public class MainActivity extends Activity
             for(int i = 0; i < maxVideoNumber; i++) {
                 if ( videoFrames[i].acquire() ) {
                     targetFrame = videoFrames[i];
-                }    
+                    break;
+                }
             }
             // return 503 internal error
             if ( targetFrame == null) {
@@ -313,7 +314,7 @@ public class MainActivity extends Activity
             inProcessing = true;
             try{
                 ret = newImage.compressToJpeg( new Rect(0,0,picWidth,picHeight), 30, targetFrame);
-            }catch (Exception ex) {
+            } catch (Exception ex) {
                 ret = false;    
             } 
             inProcessing = false;

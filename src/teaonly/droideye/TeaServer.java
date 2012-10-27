@@ -67,12 +67,12 @@ public class TeaServer extends NanoHTTPD
     
     @Override
     public void serveDone(Response r) {
-        if ( r.isStreaming ) { 
-            try{
+       try{
+            if ( r.isStreaming && r.data.available() > 0) { 
                 r.data.close();
-            }catch(IOException ex) {
             }
-        }
+       } catch(IOException ex) {
+       }
     } 
 
     public static interface CommonGatewayInterface {

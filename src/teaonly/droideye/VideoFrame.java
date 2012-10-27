@@ -85,6 +85,7 @@ class VideoFrame extends OutputStream {
         @Override 
         public void close() throws IOException{
             rIndex = 0;
+            reset();
             release();
         }
         

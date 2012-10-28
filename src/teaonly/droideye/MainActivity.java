@@ -210,7 +210,7 @@ public class MainActivity extends Activity
                 webServer.registerCGI("/cgi/query", doQuery);
                 webServer.registerCGI("/cgi/setup", doSetup);
                 webServer.registerCGI("/stream/live.jpg", doCapture);
-                webServer.registerCGI("/stream/live.mp3", doCapture);
+                webServer.registerCGI("/stream/live.mp3", doBroadcast);
             }catch (IOException e){
                 webServer = null;
             }
@@ -283,7 +283,22 @@ public class MainActivity extends Activity
             return null;
         }    
     }; 
- 
+
+    private TeaServer.CommonGatewayInterface doBroadcast = new TeaServer.CommonGatewayInterface() {
+        @Override
+        public String run(Properties parms) {
+            return null;
+        }   
+        
+        
+        @Override 
+        public InputStream streaming(Properties parms) {
+            // TODO: sending mp3 streaming...
+            return null;
+        }
+
+    };
+
     private TeaServer.CommonGatewayInterface doCapture = new TeaServer.CommonGatewayInterface () {
         @Override
         public String run(Properties parms) {

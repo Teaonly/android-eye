@@ -16,9 +16,10 @@ https://play.google.com/store/apps/details?id=teaonly.droideye
   * Publishing alarm messages to SNS (not ready) 
 * Portable
   * Setup router by uPnP (not ready)
-  * Accessing streaming over internet by DDNA (not ready)
+  * Accessing streaming over internet by DDNS (not ready)
 
 ## Update ##
-*  2012-07-26  creating project
+*  2012-07-26  creating project.
 *  2012-08-04  Multiple jpeg streaming is OK, basic framework is OK.
 *  2012-10-18  Bugs fixed, supported IE, Firefox and Chrome. 
+*  2012-10-28  Fixed small bugs, added audio flash player in Web page.

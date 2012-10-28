@@ -29,26 +29,6 @@
                 </div>
                 <div>
                     <div id="player" style="display:block;height:32px;"></div>   
-                    <script>
-                    // install flowplayer into container
-                    $f("player", "flowplayer-3.2.15.swf", {
-                        plugins: {
-                            controls: {
-                                fullscreen: false,
-                                height: 30,
-                                autoHide: false
-                            }
-                        },
-                        clip: {
-                            autoPlay: false,
-                            url: "live.mp3",
-                            // optional: when playback starts close the first audio playback
-                            onBeforeBegin: function() {
-                                $f("player").close();
-                            }  
-                        }, 
-                    });
-                    </script>  
                 </div>    
             </li>
             <li data-role="fieldcontain" class="center">

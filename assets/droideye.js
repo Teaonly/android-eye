@@ -6,6 +6,8 @@ var planeHeight = 0;
 var basicURL = "";
 var inStreaming = false;
 var picCount = 0;
+var audioCount = 0;
+var audioPlayer;
 
 function CameraSize () {
     this.width = 0;
@@ -66,13 +68,6 @@ var onQueryDone = function (ret) {
     $("#resolution-choice").selectmenu('refresh');
     $("#resolution-choice").bind("change", doChangeRes);  
 
-    // setup audio stuff
-    /*
-    var oAudio = document.getElementById('live_audio_player');
-    oAudio.src = "live.mp3";
-    oAudio.play();
-    */
-
     $("#debug_msg").html("Connected");
 };
 
@@ -93,10 +88,12 @@ var playClick = function () {
         $("#btn_play").val("Stop").button("refresh");
         $("#resolution-choice").selectmenu("disable");
         refreshLive();
+        audioPlayer.play();
     } else {
         inStreaming = false;
         $("#btn_play").val("Play").button("refresh");
         $("#resolution-choice").selectmenu("enable");
+        audioPlayer.stop();
     }
 };
 
@@ -118,6 +115,32 @@ var doChangeRes = function () {
     });
 };
 
+var initAudioPlayer = function () {
+    // install flowplayer into container
+    // http://flash.flowplayer.org/
+
+    $f("player", "flowplayer-3.2.15.swf", {
+        plugins: {
+            controls: {
+                fullscreen: false,
+                height: 30,
+                autoHide: false,
+                play: false,
+            }
+        },
+        clip: {
+            autoPlay: false,
+            url: "live.mp3",
+            // optional: when playback starts close the first audio playback
+            onBeforeBegin: function() {
+                $f("player").close();
+            }  
+        }, 
+    });
+
+    audioPlayer = $f();
+};
+
 $("#page_main").live("pageinit", function() {
     basicURL = $(location).attr('href');
         
@@ -131,6 +154,8 @@ $("#page_main").live("pageinit", function() {
 
     $("#btn_play").button('disable');
     $("#btn_play").bind("click", playClick);
+    
+    initAudioPlayer();
 
     $.ajax({
         type: "GET",
@@ -140,7 +165,6 @@ $("#page_main").live("pageinit", function() {
         success: onQueryDone
     });
 });
-
 
 //////////////////////////////////////////////
 // Top level code define

@@ -18,7 +18,7 @@ JNIEXPORT jint JNICALL JNIDEFINE(nativeOpenEncoder)(JNIEnv* env, jclass clz) {
     
     lame = lame_init();
     lame_set_in_samplerate(lame, 44100);
-    lame_set_num_channels(lame, 1);
+    //lame_set_num_channels(lame, 1);
     lame_set_VBR(lame, vbr_default);
     lame_init_params(lame);
     
@@ -38,8 +38,9 @@ JNIEXPORT jint JNICALL JNIDEFINE(nativeEncodingPCM)(JNIEnv* env, jclass clz, jby
     mp3 = env->GetByteArrayElements(mp3Data, &isCopy);
     int mp3Size = env->GetArrayLength(mp3Data);
     
-    int ret = lame_encode_buffer_interleaved(lame, (short *)pcm, pcmLength/2, (unsigned char *)mp3, mp3Size);
-    
+    //int ret = lame_encode_buffer_interleaved(lame, (short *)pcm, pcmLength/2, (unsigned char *)mp3, mp3Size);
+    int ret = lame_encode_buffer(lame, (short *)pcm, (short *)pcm, pcmLength/2, (unsigned char *)mp3, mp3Size);
+
     env->ReleaseByteArrayElements(pcmData, pcm, JNI_ABORT);    /*Don't copy to java side*/
     env->ReleaseByteArrayElements(mp3Data, mp3, 0);             /*Copy to java side*/
     return ret;

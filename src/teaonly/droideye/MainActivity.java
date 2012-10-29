@@ -4,6 +4,7 @@ import teaonly.droideye.*;
 import java.io.IOException;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.lang.System;
@@ -69,10 +70,12 @@ public class MainActivity extends Activity
     
     TeaServer webServer = null;
     private CameraView cameraView_;
-    private AudioRecord audioCapture_ = null;
     private OverlayView overlayView_;
     private Button btnExit;
     private TextView tvMessage;
+
+    private AudioRecord audioCapture = null;
+    private StreamingLoop audioLoop = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -161,17 +164,20 @@ public class MainActivity extends Activity
   
     private void initAudio() {
         int minBufferSize = AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
-        int minTargetSize = 2 * 44100 * 2;      // 2 seconds buffer size
+        int minTargetSize = 4410 * 2;      // 0.1 seconds buffer size
         if (minTargetSize < minBufferSize) {
             minTargetSize = minBufferSize;
         }
-        
-        Log.d(TAG, ">>>>>>> minBufferSize = " + minBufferSize + "   targetBuffersize = " + minTargetSize); 
-        audioCapture_ = new AudioRecord(MediaRecorder.AudioSource.MIC,
+        if (audioCapture == null) {
+            audioCapture = new AudioRecord(MediaRecorder.AudioSource.MIC,
                                         44100,
                                         AudioFormat.CHANNEL_IN_MONO,
                                         AudioFormat.ENCODING_PCM_16BIT,
                                         minTargetSize);
+        }
+
+        if ( audioLoop == null)     
+            audioLoop = new StreamingLoop("teaonly.droideye");
     }
 
     private void initCamera() {
@@ -293,7 +299,15 @@ public class MainActivity extends Activity
         
         @Override 
         public InputStream streaming(Properties parms) {
-            // TODO: sending mp3 streaming...
+            if ( audioLoop.isConnected() ) {     
+                return null;                    // tell client is is busy by 503
+            }    
+             
+            audioLoop.InitLoop(128, 8192);
+            audioCapture.startRecording();
+            AudioEncoder audioEncoder = new AudioEncoder();
+            //audioEncoder.start();  
+
             return null;
         }
 
@@ -347,10 +361,40 @@ public class MainActivity extends Activity
         }
     }; 
 
-    private class AnalyseThread extends Thread {
+    private class AudioEncoder extends Thread {
+        byte[] audioPackage = new byte[1024*16];
+        int packageSize = 4410 * 2;
         @Override
-        public void run() {          
-             
+        public void run() {
+            OutputStream os = null;
+            try{
+                os = audioLoop.getOutputStream();
+            } catch(IOException e) {
+                os = null;
+            }
+            while(true) {
+                if ( os == null) {
+                    break;
+                }
+
+                int ret = audioCapture.read(audioPackage, 0, packageSize);
+                if ( ret == AudioRecord.ERROR_INVALID_OPERATION ||
+                        ret == AudioRecord.ERROR_BAD_VALUE) {
+                    break; 
+                }
+
+                //TODO: call jni compress PCM to mp3
+                /*
+                try {
+                    os.write(audioPackage, 0, ret);
+                } catch(IOException e) {
+                    break;    
+                }
+                */
+
+            }
+            audioLoop.ReleaseLoop();
         }
     }
 }
+

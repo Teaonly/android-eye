@@ -130,7 +130,7 @@ var initAudioPlayer = function () {
         },
         clip: {
             autoPlay: false,
-            url: "live.mp3",
+            url: "stream/live.mp3",
             // optional: when playback starts close the first audio playback
             onBeforeBegin: function() {
                 $f("player").close();

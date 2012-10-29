@@ -80,7 +80,6 @@ public class MainActivity extends Activity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //NativeAPI.LoadLibraries();
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         Window win = getWindow();
@@ -304,13 +303,21 @@ public class MainActivity extends Activity
             if ( audioLoop.isConnected() ) {     
                 return null;                    // tell client is is busy by 503
             }    
-             
+ 
             audioLoop.InitLoop(128, 8192);
+            InputStream is = null;
+            try{
+                is = audioLoop.getInputStream();
+            } catch(IOException e) {
+                audioLoop.ReleaseLoop();
+                return null;
+            }
+            
             audioCapture.startRecording();
             AudioEncoder audioEncoder = new AudioEncoder();
-            //audioEncoder.start();  
-
-            return null;
+            audioEncoder.start();  
+            
+            return is;
         }
 
     };
@@ -368,6 +375,7 @@ public class MainActivity extends Activity
     static private native int nativeEncodingPCM(byte[] pcmdata, int length, byte[] mp3Data);    
     private class AudioEncoder extends Thread {
         byte[] audioPackage = new byte[1024*16];
+        byte[] mp3Data = new byte[1024*8];
         int packageSize = 4410 * 2;
         @Override
         public void run() {
@@ -391,17 +399,14 @@ public class MainActivity extends Activity
                     break; 
                 }
 
-                //TODO: call jni compress PCM to mp3
-                 
-
-
-                /*
+                //TODO: call jni encoding PCM to mp3
+                ret = nativeEncodingPCM(audioPackage, ret, mp3Data);          
+                
                 try {
-                    os.write(audioPackage, 0, ret);
+                    os.write(mp3Data, 0, ret);
                 } catch(IOException e) {
                     break;    
                 }
-                */
             }
             audioLoop.ReleaseLoop();
             nativeCloseEncoder();

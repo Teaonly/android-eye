@@ -178,6 +178,8 @@ public class MainActivity extends Activity
 
         if ( audioLoop == null)     
             audioLoop = new StreamingLoop("teaonly.droideye");
+
+        System.loadLibrary("mp3encoder");
     }
 
     private void initCamera() {
@@ -361,21 +363,27 @@ public class MainActivity extends Activity
         }
     }; 
 
+    static private native int nativeOpenEncoder();
+    static private native void nativeCloseEncoder();
+    static private native int nativeEncodingPCM(byte[] pcmdata, int length, byte[] mp3Data);    
     private class AudioEncoder extends Thread {
         byte[] audioPackage = new byte[1024*16];
         int packageSize = 4410 * 2;
         @Override
         public void run() {
+            nativeOpenEncoder(); 
+            
             OutputStream os = null;
             try{
                 os = audioLoop.getOutputStream();
             } catch(IOException e) {
                 os = null;
+                audioLoop.ReleaseLoop();
+                nativeCloseEncoder();
+                return;
             }
+            
             while(true) {
-                if ( os == null) {
-                    break;
-                }
 
                 int ret = audioCapture.read(audioPackage, 0, packageSize);
                 if ( ret == AudioRecord.ERROR_INVALID_OPERATION ||
@@ -384,6 +392,9 @@ public class MainActivity extends Activity
                 }
 
                 //TODO: call jni compress PCM to mp3
+                 
+
+
                 /*
                 try {
                     os.write(audioPackage, 0, ret);
@@ -391,9 +402,9 @@ public class MainActivity extends Activity
                     break;    
                 }
                 */
-
             }
             audioLoop.ReleaseLoop();
+            nativeCloseEncoder();
         }
     }
 }

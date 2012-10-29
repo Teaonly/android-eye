@@ -18,6 +18,7 @@ LOCAL_SRC_FILES += $(SOURCE_DIR)/bitstream.c\
                    $(SOURCE_DIR)/set_get.c\
                    $(SOURCE_DIR)/takehiro.c\
                    $(SOURCE_DIR)/vbrquantize.c\
-                   $(SOURCE_DIR)/version.c
+                   $(SOURCE_DIR)/version.c\
+                   mp3encoder.cpp
 
 

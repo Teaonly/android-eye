@@ -9,7 +9,7 @@ https://play.google.com/store/apps/details?id=teaonly.droideye
 
 ## Specifications ##
 * Streaming 
-  * Support Mjpeg streaming and audio (viideo is OK, audio is in doing)
+  * Support Mjpeg streaming and audio (viideo is OK, audio is also OK)
   * Build-in web service, you can see the video via browser in pc and another phone (PC is ok, phone is not ready)
 * Security
   * Support motion detecting (not ready)
@@ -23,3 +23,4 @@ https://play.google.com/store/apps/details?id=teaonly.droideye
 *  2012-08-04  Multiple jpeg streaming is OK, basic framework is OK.
 *  2012-10-18  Bugs fixed, supported IE, Firefox and Chrome. 
 *  2012-10-28  Fixed small bugs, added audio flash player in Web page.
+*  2012-10-30  Finished audio support.

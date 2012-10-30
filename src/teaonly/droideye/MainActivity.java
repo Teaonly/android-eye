@@ -144,6 +144,7 @@ public class MainActivity extends Activity
             webServer.stop();
         cameraView_.StopPreview(); 
         //cameraView_.Release();
+        audioLoop.ReleaseLoop();
     
         //System.exit(0);
         finish();
@@ -382,7 +383,7 @@ public class MainActivity extends Activity
             nativeOpenEncoder(); 
             
             OutputStream os = null;
-            try{
+            try {
                 os = audioLoop.getOutputStream();
             } catch(IOException e) {
                 os = null;
@@ -408,6 +409,7 @@ public class MainActivity extends Activity
                     break;    
                 }
             }
+            
             audioLoop.ReleaseLoop();
             nativeCloseEncoder();
         }

@@ -6,6 +6,8 @@ var planeHeight = 0;
 var basicURL = "";
 var inStreaming = false;
 var picCount = 0;
+
+var audioAPI;
 var audioCount = 0;
 var audioPlayer;
 
@@ -88,12 +90,16 @@ var playClick = function () {
         $("#btn_play").val("Stop").button("refresh");
         $("#resolution-choice").selectmenu("disable");
         refreshLive();
-        audioPlayer.play();
+        
+        var newClip = {'url':'stream/live.mp3?id='+audioCount,'autoplay':true};
+        audioCount ++;
+        audioPlayer.play(newClip);
     } else {
         inStreaming = false;
         $("#btn_play").val("Play").button("refresh");
         $("#resolution-choice").selectmenu("enable");
         audioPlayer.stop();
+        audioPlayer.close();
     }
 };
 
@@ -131,11 +137,7 @@ var initAudioPlayer = function () {
         clip: {
             autoPlay: false,
             url: "stream/live.mp3",
-            // optional: when playback starts close the first audio playback
-            onBeforeBegin: function() {
-                $f("player").close();
-            }  
-        }, 
+        }
     });
 
     audioPlayer = $f();

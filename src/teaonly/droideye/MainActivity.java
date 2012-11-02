@@ -104,6 +104,9 @@ public class MainActivity extends Activity
             videoFrames[i] = new VideoFrame(1024*1024*2);        
         }    
 
+        System.loadLibrary("mp3encoder");
+        System.loadLibrary("natpmp");
+
         initAudio();
         initCamera();
     }
@@ -181,7 +184,6 @@ public class MainActivity extends Activity
         if ( audioLoop == null)     
             audioLoop = new StreamingLoop("teaonly.droideye");
 
-        System.loadLibrary("mp3encoder");
     }
 
     private void initCamera() {
@@ -229,6 +231,8 @@ public class MainActivity extends Activity
             tvMessage1.setText( getString(R.string.msg_access_local) + " http://" + ipAddr  + ":8080" );
             tvMessage2.setText( getString(R.string.msg_access_query));
             tvMessage2.setVisibility(View.VISIBLE);
+            NatPMPClient natQuery = new NatPMPClient();
+            natQuery.start();  
             return true;
         } else {
             tvMessage1.setText( getString(R.string.msg_error) );
@@ -423,12 +427,13 @@ public class MainActivity extends Activity
 
     
     static private native String nativeQueryInternet();    
-    private class NatPMPClinet extends Thread {
-        String ret = nativeQueryInternet();
+    private class NatPMPClient extends Thread {
+        String queryResult;
+        Handler handleQueryResult = new Handler(getMainLooper());  
         @Override
         public void run(){
-            Handler handleQueryResult = new Handler(getMainLooper());  
-            if ( ret.startsWith("error:") ) {
+            queryResult = nativeQueryInternet();
+            if ( queryResult.startsWith("error:") ) {
                 handleQueryResult.post( new Runnable() {
                     @Override
                     public void run() {
@@ -439,7 +444,7 @@ public class MainActivity extends Activity
                 handleQueryResult.post( new Runnable() {
                     @Override
                     public void run() {
-                        tvMessage2.setText( getString(R.string.msg_access_internet) + " " + ret );
+                        tvMessage2.setText( getString(R.string.msg_access_internet) + " " + queryResult );
                     }
                 });
             }

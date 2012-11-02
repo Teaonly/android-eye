@@ -72,7 +72,8 @@ public class MainActivity extends Activity
     private CameraView cameraView_;
     private OverlayView overlayView_;
     private Button btnExit;
-    private TextView tvMessage;
+    private TextView tvMessage1;
+    private TextView tvMessage2;
 
     private AudioRecord audioCapture = null;
     private StreamingLoop audioLoop = null;
@@ -96,7 +97,8 @@ public class MainActivity extends Activity
 
         btnExit = (Button)findViewById(R.id.btn_exit);
         btnExit.setOnClickListener(exitAction);
-        tvMessage = (TextView)findViewById(R.id.tv_message);
+        tvMessage1 = (TextView)findViewById(R.id.tv_message1);
+        tvMessage2 = (TextView)findViewById(R.id.tv_message2);
         
         for(int i = 0; i < maxVideoNumber; i++) {
             videoFrames[i] = new VideoFrame(1024*1024*2);        
@@ -224,12 +226,16 @@ public class MainActivity extends Activity
             }
         }
         if ( webServer != null) {
-            tvMessage.setText( getString(R.string.msg_access) + " http://" + ipAddr  + ":8080" );
+            tvMessage1.setText( getString(R.string.msg_access_local) + " http://" + ipAddr  + ":8080" );
+            tvMessage2.setText( getString(R.string.msg_access_query));
+            tvMessage2.setVisibility(View.VISIBLE);
             return true;
         } else {
-            tvMessage.setText( getString(R.string.msg_error) );
+            tvMessage1.setText( getString(R.string.msg_error) );
+            tvMessage2.setVisibility(View.GONE);
             return false;
         }
+          
     }
    
     private OnClickListener exitAction = new OnClickListener() {
@@ -414,5 +420,30 @@ public class MainActivity extends Activity
             nativeCloseEncoder();
         }
     }
-}
+
+    
+    static private native String nativeQueryInternet();    
+    private class NatPMPClinet extends Thread {
+        String ret = nativeQueryInternet();
+        @Override
+        public void run(){
+            Handler handleQueryResult = new Handler(getMainLooper());  
+            if ( ret.startsWith("error:") ) {
+                handleQueryResult.post( new Runnable() {
+                    @Override
+                    public void run() {
+                        tvMessage2.setText( getString(R.string.msg_access_query_error));                        
+                    }
+                });
+            } else {
+                handleQueryResult.post( new Runnable() {
+                    @Override
+                    public void run() {
+                        tvMessage2.setText( getString(R.string.msg_access_internet) + " " + ret );
+                    }
+                });
+            }
+        }    
+    }
+}    
 

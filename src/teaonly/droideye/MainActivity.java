@@ -150,6 +150,7 @@ public class MainActivity extends Activity
         cameraView_.StopPreview(); 
         //cameraView_.Release();
         audioLoop.ReleaseLoop();
+        audioCapture.release();
     
         //System.exit(0);
         finish();
@@ -181,8 +182,11 @@ public class MainActivity extends Activity
                                         minTargetSize);
         }
 
-        if ( audioLoop == null)     
-            audioLoop = new StreamingLoop("teaonly.droideye");
+        if ( audioLoop == null) {  
+            Random rnd = new Random();
+            String etag = Integer.toHexString( rnd.nextInt() );
+            audioLoop = new StreamingLoop("teaonly.droideye" + etag );
+        }
 
     }
 

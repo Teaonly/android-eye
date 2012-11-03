@@ -7,6 +7,6 @@
     <string name="msg_access_local">Open at local: </string>
     <string name="msg_access_internet">Open at internet:  </string>
     <string name="msg_access_query">Detecting internet ... </string>
-    <string name="msg_access_query_error">Can not be opened at internet</string>
+    <string name="msg_access_query_error">Setup router manually to open at internet</string>
     <string name="msg_error">Error: Please enable wifi</string>
 </resources>

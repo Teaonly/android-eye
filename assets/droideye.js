@@ -89,15 +89,20 @@ var playClick = function () {
         inStreaming = true;
         $("#btn_play").val("Stop").button("refresh");
         $("#resolution-choice").selectmenu("disable");
-        refreshLive();
+        $("#checkbox-audio").checkboxradio('disable');
         
-        var newClip = {'url':'stream/live.mp3?id='+audioCount,'autoplay':true};
-        audioCount ++;
-        audioPlayer.play(newClip);
+        refreshLive();
+
+        if ( $("#checkbox-audio").is(":checked") ) {
+            var newClip = {'url':'stream/live.mp3?id='+audioCount,'autoplay':true};
+            audioCount ++;
+            audioPlayer.play(newClip);
+        }
     } else {
         inStreaming = false;
         $("#btn_play").val("Play").button("refresh");
         $("#resolution-choice").selectmenu("enable");
+        $("#checkbox-audio").checkboxradio('enable');
         audioPlayer.stop();
         audioPlayer.close();
     }

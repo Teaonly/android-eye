@@ -206,7 +206,8 @@ public class MainActivity extends Activity
                 NetworkInterface intf = en.nextElement();
                 for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
                     InetAddress inetAddress = enumIpAddr.nextElement();
-                    if (!inetAddress.isLoopbackAddress() && !inetAddress.isLinkLocalAddress() && inetAddress.isSiteLocalAddress() ) {
+                    //if (!inetAddress.isLoopbackAddress() && !inetAddress.isLinkLocalAddress() && inetAddress.isSiteLocalAddress() ) {
+                    if (!inetAddress.isLoopbackAddress() ) {
                         String ipAddr = inetAddress.getHostAddress();
                         return ipAddr;
                     }
@@ -233,8 +234,8 @@ public class MainActivity extends Activity
         }
         if ( webServer != null) {
             tvMessage1.setText( getString(R.string.msg_access_local) + " http://" + ipAddr  + ":8080" );
-            tvMessage2.setText( getString(R.string.msg_access_query));
-            tvMessage2.setVisibility(View.VISIBLE);
+            //tvMessage2.setText( getString(R.string.msg_access_query));
+            //tvMessage2.setVisibility(View.VISIBLE);
             NatPMPClient natQuery = new NatPMPClient();
             natQuery.start();  
             return true;

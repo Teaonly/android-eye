@@ -13,6 +13,7 @@ import java.util.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import  org.apache.http.conn.util.InetAddressUtils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -207,7 +208,7 @@ public class MainActivity extends Activity
                 for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
                     InetAddress inetAddress = enumIpAddr.nextElement();
                     //if (!inetAddress.isLoopbackAddress() && !inetAddress.isLinkLocalAddress() && inetAddress.isSiteLocalAddress() ) {
-                    if (!inetAddress.isLoopbackAddress() ) {
+                    if (!inetAddress.isLoopbackAddress() && InetAddressUtils.isIPv4Address(inetAddress.getHostAddress()) ) {
                         String ipAddr = inetAddress.getHostAddress();
                         return ipAddr;
                     }

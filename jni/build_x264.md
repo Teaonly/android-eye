@@ -3,7 +3,7 @@
 
 ```
 git clone git://git.videolan.org/x264.git
-export NDK_SYSROOT=~/opt/android-ndk-r9d/platforms/android-14/arch-arm
+export NDK_SYSROOT=~/opt/android-ndk-r9d/platforms/android-9/arch-arm
 export PATH=$PATH:~/opt/android-ndk-r9d/toolchains/arm-linux-androideabi-4.6/prebuilt/darwin-x86_64/bin/
 ./configure --cross-prefix=arm-linux-androideabi- --sysroot="$NDK_SYSROOT" --host=arm-linux --enable-pic --enable-static --disable-cli
 ./make STRIP=

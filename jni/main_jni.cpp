@@ -9,7 +9,7 @@ extern "C" {
 #undef JNIEXPORT
 #define JNIEXPORT __attribute__((visibility("default")))
 #define JOW(rettype, name) extern "C" rettype JNIEXPORT JNICALL \
-          Java_teaonly_droideye_MainActivity_##name
+          Java_teaonly_droideye_MainActivity_native_##name
 
 H264Encoder* myAVC = NULL;
 g726_state   g726State;

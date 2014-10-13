@@ -23,9 +23,10 @@ https://play.google.com/store/apps/details?id=teaonly.droideye
     https://play.google.com/store/apps/details?id=com.yacamera.p2p
 
 ## License and third party libraries
-  * GPL v2
-  * X.264 
-  * Java Websocket library
+  * License GPL v2
+  * X.264 : git://git.videolan.org/x264.git 
+  * Java Websocket library : https://github.com/TooTallNate/Java-WebSocket
+  * H.264 javascript decoder:  https://github.com/mbebenita/Broadway
 
 ## Update ##
 *  2014-10-10  Refine project with new specifications.

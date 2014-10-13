@@ -1,66 +1,78 @@
 package teaonly.droideye;
 
-import teaonly.droideye.*;
-
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.concurrent.locks.ReentrantLock;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.util.UUID;
+import java.util.Collections;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ArrayBlockingQueue;
+
 import org.apache.http.conn.util.InetAddressUtils;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.Context;
 import android.content.Intent;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.PictureCallback;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Bitmap.CompressFormat;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.ImageFormat;
-import android.graphics.Rect;
-import android.graphics.Paint;
-import android.graphics.YuvImage;
 import android.media.AudioFormat;
 import android.media.MediaRecorder;
 import android.media.AudioRecord;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.Handler;
-import android.util.*;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketImpl;
+import org.java_websocket.drafts.Draft;
+import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.framing.FrameBuilder;
+import org.java_websocket.framing.Framedata;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.WebSocketServer;
+
 
 public class MainActivity extends Activity
         implements CameraView.CameraReadyCallback {
     public static String TAG="TEAONLY";
     private final int ServerPort = 8080;
+    private final int StreamingPort = 8088;
+    private final int MediaBlockNumber = 16;
+    private final int MediaBlockSize = 1024*512;
+    private final int EstimatedFrameNumber = 30;
+    private final int StreamingInterval = 100;
 
+    private StreamingServer streamingServer = null;
     private TeaServer webServer = null;
     private OverlayView overlayView = null;
     private CameraView cameraView = null;
     private AudioRecord audioCapture = null;
 
     ExecutorService executor = Executors.newFixedThreadPool(3);
+    VideoEncodingTask videoTask = new  VideoEncodingTask();
     private ReentrantLock previewLock = new ReentrantLock();
     boolean inProcessing = false;
 
     byte[] yuvFrame = new byte[1920*1280*2];
+
+    MediaBlock[] mediaBlocks = new MediaBlock[MediaBlockNumber];
+    BlockingQueue mediaQueue = new ArrayBlockingQueue(MediaBlockNumber);
+    BlockingQueue freeQueue = new ArrayBlockingQueue(MediaBlockNumber);
+    MediaBlock currentBlock;
+
+    Handler streamingHandler;
+
 
     //
     //  Activiity's event handler
@@ -77,10 +89,34 @@ public class MainActivity extends Activity
         setContentView(R.layout.main);
 
         // init audio and camera
+
+        for(int i = 0; i < MediaBlockNumber; i++) {
+            mediaBlocks[i] = new MediaBlock(MediaBlockSize);
+        }
+        resetMediaBuffer();
+
+        try {
+            streamingServer = new StreamingServer(StreamingPort);
+            streamingServer.start();
+        } catch (UnknownHostException e) {
+            return;
+        }
+
         if ( initWebServer() ) {
             initAudio();
             initCamera();
+        } else {
+            return;
         }
+
+        streamingHandler = new Handler();
+        streamingHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                doStreaming();
+            }
+        }, StreamingInterval);
+
     }
     @Override
     public void onDestroy() {
@@ -90,6 +126,11 @@ public class MainActivity extends Activity
     @Override
     public void onPause() {
         super.onPause();
+
+        if ( webServer != null)
+            webServer.stop();
+
+        audioCapture.release();
 
         if ( cameraView != null) {
             previewLock.lock();
@@ -113,7 +154,7 @@ public class MainActivity extends Activity
     //
     public void onCameraReady() {
         cameraView.StopPreview();
-        cameraView.setupCamera(480, 360, 4, 25.0, previewCb);
+        cameraView.setupCamera(640, 480, 4, 25.0, previewCb);
 
         nativeInitMediaEncoder(cameraView.Width(), cameraView.Height());
 
@@ -171,6 +212,41 @@ public class MainActivity extends Activity
                     targetSize);
         }
 
+    }
+
+    private void resetMediaBuffer() {
+        synchronized(MainActivity.this) {
+            mediaQueue.clear();
+            freeQueue.clear();
+            for (int i = 1; i < MediaBlockNumber; i++) {
+                mediaBlocks[i].reset();
+                freeQueue.offer( mediaBlocks[i]);
+            }
+            mediaBlocks[0].reset();
+            currentBlock = mediaBlocks[0];
+        }
+    }
+
+    private void doStreaming () {
+        MediaBlock targetBlock = null;
+        synchronized(MainActivity.this) {
+            targetBlock = (MediaBlock) mediaQueue.poll();
+        }
+
+        if ( targetBlock != null) {
+            Log.d(TAG, "######: " + targetBlock.length());
+            synchronized(MainActivity.this) {
+                targetBlock.reset();
+                freeQueue.offer(targetBlock);
+            }
+        }
+
+        streamingHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                doStreaming();
+            }
+        }, StreamingInterval);
 
     }
 
@@ -188,19 +264,16 @@ public class MainActivity extends Activity
     };
 
     private void doVideoEncode(byte[] frame) {
-        synchronized(this) {
-            if ( inProcessing == true) {
-                return;
-            }
-            inProcessing = true;
+        if ( inProcessing == true) {
+            return;
         }
+        inProcessing = true;
 
         int picWidth = cameraView.Width();
         int picHeight = cameraView.Height();
         int size = picWidth*picHeight + picWidth*picHeight/2;
         System.arraycopy(frame, 0, yuvFrame, 0, size);
 
-        VideoEncodingTask videoTask = new  VideoEncodingTask();
         executor.execute(videoTask);
     };
 
@@ -208,34 +281,139 @@ public class MainActivity extends Activity
         private byte[] resultNal = new byte[1024*1024];
 
         public void run() {
-            int ret = nativeDoVideoEncode(yuvFrame, resultNal, 1);
+            int flag = 0;
+            if ( currentBlock.videoCount == 0) {
+                flag = 1;
+            }
+
+            int ret = nativeDoVideoEncode(yuvFrame, resultNal, flag);
+            if ( ret <= 0) {
+                return;
+            }
 
             synchronized(MainActivity.this) {
+                if ( currentBlock.length() + ret <= MediaBlockSize ) {
+                    currentBlock.writeVideo( resultNal, ret);
+                    Log.d(TAG, ">>>>> Write Video to block : " + currentBlock.length() );
+                } else {
+                    // FIXME : drop this packet
+
+                    if ( freeQueue.size() == 0) {
+                        currentBlock.reset();
+                    } else {
+                        mediaQueue.offer(currentBlock);
+                        currentBlock = (MediaBlock) freeQueue.poll();
+                        currentBlock.reset();
+                    }
+
+                    inProcessing = false;
+
+                    Log.d(TAG, ">>>>> Drop packet: " + currentBlock.length() );
+                    return;
+                }
+
+                if ( currentBlock.videoCount >= EstimatedFrameNumber) {
+                    Log.d(TAG, ">>>>> Completed Block: " + currentBlock.length() );
+
+                    if ( freeQueue.size() == 0) {
+                        currentBlock.reset();
+                    } else {
+                        mediaQueue.offer(currentBlock);
+                        currentBlock = (MediaBlock) freeQueue.poll();
+                        currentBlock.reset();
+                    }
+
+                    Log.d(TAG, "\t\tFree Block: " + freeQueue.size() );
+                }
+
                 inProcessing = false;
             }
+
+
         }
     };
 
     private class AudioEncoder extends Thread {
-        byte[] audioPackage = new byte[1024*32];
-        int packageSize = 8000*2;   // 0.5 seconds
+        private byte[] audioPCM = new byte[1024*32];
+        private byte[] audioPacket = new byte[1024*1024];
+
+        int packageSize = 800;
 
         @Override
         public void run() {
             while(true) {
-                int ret = audioCapture.read(audioPackage, 0, packageSize);
+                int ret = audioCapture.read(audioPCM, 0, packageSize);
                 if ( ret == AudioRecord.ERROR_INVALID_OPERATION ||
                      ret == AudioRecord.ERROR_BAD_VALUE) {
                     break;
                 }
-                //nativeAgent.updatePCM(audioPackage, ret);
+
+                ret = nativeDoAudioEncode(audioPCM, ret, audioPacket);
+                if(ret <= 0) {
+                    break;
+                }
+
+                synchronized (MainActivity.this) {
+                    currentBlock.write( audioPacket, ret);
+                    Log.d(TAG, ">>>>Audio wirte:" + currentBlock.length());
+                }
             }
         }
     }
 
+
+    private class StreamingServer extends WebSocketServer {
+        private WebSocket mediaSocket = null;
+        public boolean inStreaming = false;
+
+        public StreamingServer( int port) throws UnknownHostException {
+		        super( new InetSocketAddress( port ) );
+	      }
+
+        @Override
+      	public void onOpen( WebSocket conn, ClientHandshake handshake ) {
+            if ( inStreaming == true) {
+                conn.close();
+            } else {
+                mediaSocket = conn;
+                inStreaming = true;
+            }
+      	}
+
+        @Override
+	      public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
+		         if ( conn == mediaSocket) {
+                inStreaming = false;
+                mediaSocket = null;
+                resetMediaBuffer();
+             }
+	      }
+
+        @Override
+      	public void onError( WebSocket conn, Exception ex ) {
+             if ( conn == mediaSocket) {
+                inStreaming = false;
+                mediaSocket = null;
+             }
+      	}
+
+        @Override
+      	public void onMessage( WebSocket conn, ByteBuffer blob ) {
+
+      	}
+
+        @Override
+        public void onMessage( WebSocket conn, String message ) {
+
+        }
+
+    }
+
+
     private native void nativeInitMediaEncoder(int width, int height);
     private native void nativeReleaseMediaEncoder(int width, int height);
     private native int nativeDoVideoEncode(byte[] in, byte[] out, int flag);
+    private native int nativeDoAudioEncode(byte[] in, int length, byte[] out);
 
     static {
         System.loadLibrary("MediaEncoder");

@@ -33,16 +33,16 @@ JOW(int, nativeDoVideoEncode)(JNIEnv* env, jclass, jbyteArray _yuvData, jbyteArr
     jbyte* nalsData = env->GetByteArrayElements(_nalsData, &isCopy);
 
     int ret = myAVC->doEncode((unsigned char*)yuvData, (unsigned char*)nalsData, flag);
-    
+
     env->ReleaseByteArrayElements(_nalsData, nalsData, 0);
     env->ReleaseByteArrayElements(_yuvData, yuvData, JNI_ABORT);
 
     return ret;
 }
 
-JOW(int, nativeDoAudioEncoode)(JNIEnv* env, jclass, jbyteArray pcmData, jint length, jbyteArray g726Data) {
+JOW(int, nativeDoAudioEncode)(JNIEnv* env, jclass, jbyteArray pcmData, jint length, jbyteArray g726Data) {
     jboolean isCopy = JNI_TRUE;
-    jbyte* audioFrame= env->GetByteArrayElements(pcmData, NULL);
+    jbyte* audioFrame = env->GetByteArrayElements(pcmData, NULL);
     jbyte* audioPacket = env->GetByteArrayElements(g726Data, &isCopy);
 
     int j = 0;
@@ -58,9 +58,9 @@ JOW(int, nativeDoAudioEncoode)(JNIEnv* env, jclass, jbyteArray pcmData, jint len
             j++;
         } else {
             byteCode = code;
-        }        
+        }
     }
-    
+
     return j;
 
     env->ReleaseByteArrayElements(g726Data, audioPacket, 0);

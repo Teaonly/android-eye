@@ -9,25 +9,25 @@ extern "C" {
 #undef JNIEXPORT
 #define JNIEXPORT __attribute__((visibility("default")))
 #define JOW(rettype, name) extern "C" rettype JNIEXPORT JNICALL \
-          Java_teaonly_droideye_MainActivity_native_##name
+          Java_teaonly_droideye_MainActivity_##name
 
 H264Encoder* myAVC = NULL;
 g726_state   g726State;
 
-JOW(void, initMediaEncoder)(JNIEnv* env, jclass, jint width, jint height) {
+JOW(void, nativeInitMediaEncoder)(JNIEnv* env, jclass, jint width, jint height) {
     myAVC = new H264Encoder(width, height);
     g726_init_state(&g726State);
 
     return;
 };
 
-JOW(void, releaseMediaEncoder)(JNIEnv* env, jclass) {
+JOW(void, nativeReleaseMediaEncoder)(JNIEnv* env, jclass) {
     delete myAVC;
 
     return;
 };
 
-JOW(int, doVideoEncode)(JNIEnv* env, jclass, jbyteArray _yuvData, jbyteArray _nalsData, jint flag) {
+JOW(int, nativeDoVideoEncode)(JNIEnv* env, jclass, jbyteArray _yuvData, jbyteArray _nalsData, jint flag) {
     jboolean isCopy = JNI_TRUE;
     jbyte* yuvData = env->GetByteArrayElements(_yuvData, NULL);
     jbyte* nalsData = env->GetByteArrayElements(_nalsData, &isCopy);
@@ -40,7 +40,7 @@ JOW(int, doVideoEncode)(JNIEnv* env, jclass, jbyteArray _yuvData, jbyteArray _na
     return ret;
 }
 
-JOW(int, doAudioEncoode)(JNIEnv* env, jclass, jbyteArray pcmData, jint length, jbyteArray g726Data) {
+JOW(int, nativeDoAudioEncoode)(JNIEnv* env, jclass, jbyteArray pcmData, jint length, jbyteArray g726Data) {
     jboolean isCopy = JNI_TRUE;
     jbyte* audioFrame= env->GetByteArrayElements(pcmData, NULL);
     jbyte* audioPacket = env->GetByteArrayElements(g726Data, &isCopy);

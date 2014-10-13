@@ -1,54 +1,67 @@
-<!DOCTYPE html> 
-<html> 
-<head> 
-    <title>Remote Video</title> 
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"> 
-    <link rel="stylesheet" href="res/jquery.mobile-1.1.1.min.css" />
-    <link rel="stylesheet" href="extern.css">
-    <script src="res/jquery-1.7.1.min.js"></script>
-    <script src="res/jquery.mobile-1.1.1.min.js"></script>
-    <script src="res/jquery.waitforimages.min.js"></script>
-    <script src="flowplayer-3.2.11.min.js"></script>
-    <script src="droideye.js"></script>
-</head> 
-<body> 
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <title>YaCamera - Share your mobile's camera everywhere.</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <!-- 最新 Bootstrap 核心 CSS 文件 boostrap 3.0.3-->
+    <link rel="stylesheet" href="css/lib/bootstrap.min.css">
+    <link rel="stylesheet" href="css/lib/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="css/lib/jquery.nouislider.css">
+    <!-- 本地CSS文件 -->
+    <link rel="stylesheet" href="css/mystyle.css">
+</head>
+<body>
 
-<!-- 
-/*********************************************************
- * Main page 
- *
- *********************************************************/
--->
-<div data-role="page" data-title="login" id="page_main" data-theme="c" >
-    <div data-role="content">
-        <ul data-role="listview" data-inset="true" >
-            <li>
-                <div class="live_image_box" id="video_plane">
-                    <img id="live_image" src="images/black.png">
-                </div>
-                <div>
-                    <div id="player" style="display:block;height:32px;"></div>   
-                </div>    
-            </li>
-            <li data-role="fieldcontain" class="center">
-                <div class="center">
-                    <span>Video size:</span>
-                    <select name="resolution-choice" id="resolution-choice" data-native-menu="false">
-                    </select>
-                    <input type="checkbox" id="checkbox-audio" class="custom" />
-                    <label for="checkbox-audio">Enable Audio</label>
-                    <input id="btn_play" type="button" value="Play Video"/>
-                </div>
-            </li>
-        </ul>
-        <!-- for debug -->
-        <div id="bottom_div">
-            <span id="debug_msg">Connecting...</span>
+<div class="container" id="mainform">
+    <div class="page-header">
+          <h1 class="logo">Wifi Camera:</h1>
+          <div class="toolbar install">
+            <a role="button" class="btn btn-danger" id="btnInstall" target="_blank"
+               href="https://play.google.com/store/apps/details?id=teaonly.droideye">
+                <span class="glyphicon glyphicon-cloud-download"></span>&nbsp;Install App
+            </a>
+          </div>
+    </div>
+    
+    <div class="video-controls">
+        <div class="span-info">
+            <span  id="spanInfo">Conneting...</span>
         </div>
-    </div><!-- /content -->  
+    </div>
 
-</div><!-- page -->
+    <div class="video-container">
+        <canvas width="640px" height="400px" class="video-player" id="videoPlayer">
+            
+        </canvas>
+  	</div><!-- end container for captions and video -->
 
+    <br>
+    <p class="pull-right">&copy; 2014 BeginVision, Inc.</p>
+</div>
+
+
+<!-- 等待对话框-->
+<div id="modalWaittng" class="modal fade" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <h4 class="modal-title" id="headMessage">Info here...</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- emscripten and interface -->
+<script src="js/emscripten/module.js"></script>
+<script src="js/avc/util.js"></script>
+<script src="js/avc/avc.js"></script>
+<script src="js/avc/yuv2rgb.js"></script>
+<script src="js/adpcm.js"></script>
+<!-- jQuery文件。务必在bootstrap.min.js 之前引入 Jquery 1.10.2, bootstrap 3.0.3-->
+<script src="js/lib/jquery.min.js"></script>
+<script src="js/lib/bootstrap.min.js"></script>
+<script src="js/lib/base64.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>

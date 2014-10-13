@@ -1,0 +1,52 @@
+html {
+    display: table;
+    margin: auto;
+}
+
+body {
+    display: table-cell;
+    vertical-align: middle;
+    margin: 0px, auto;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
+#mainform{
+    padding: 0px;
+    margin: 0px;
+    width: 640px;
+}
+
+.page-header {
+    margin-top: 5px;
+    margin-bottom: 0px;
+}
+
+h1.logo {
+    color: #0000AA;
+    font-weight: bolder;
+    margin-top: 10px;
+    margin-bottom: 3px;
+}
+
+.install {
+    float: right;
+    margin-top: -35px;
+}
+
+.span-info {
+    color: #555555;
+    float: left;
+    margin-top: 12px;
+}
+
+.video-container {
+    box-sizing: border-box;
+    position: relative;
+    margin-top: 10px;
+}
+
+.video-player {
+    background: black;
+    width: 100%;
+    margin-top: 7px;
+}

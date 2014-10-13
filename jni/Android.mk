@@ -1,33 +1,35 @@
-#####################################################################
-# the build script for NDK for droidipcam project
-#
-
 LOCAL_PATH:= $(call my-dir)
+MY_LOCAL_PATH = $(LOCAL_PATH)
 
 ###########################################################
-#   mp3 encoder
+# building x264 library 
 #
 include $(CLEAR_VARS)
-LOCAL_MODULE := libmp3encoder
-LOCAL_CFLAGS := -O2 -Wall -DANDROID -DSTDC_HEADERS -I./libmp3lame/ 
+LOCAL_MODULE    := libx264_pre
+LOCAL_SRC_FILES := x264/libx264.a
+include $(PREBUILT_STATIC_LIBRARY)
 
-#including source files
-include $(LOCAL_PATH)/libmp3lame_build.mk
+###########################################################
+# building application library 
+#
+include $(CLEAR_VARS)
+LOCAL_MODULE := libMediaencoder
+LOCAL_CPP_EXTENSION := .cc .cpp
+LOCAL_CPPFLAGS := -O2 -Werror -Wall 
+LOCAL_C_INCLUDES :=  $(MY_LOCAL_PATH)
+LOCAL_SRC_FILES := main_jni.cpp \
+                   h264encoder.cpp \
+                   g72x/g726_32.c \
+                   g72x/g711.c \
+                   g72x/g72x.c 
+                    
 
-LOCAL_LDLIBS := -llog
+LOCAL_LDLIBS += -llog -lz
+LOCAL_SHARED_LIBRARIES := libcutils\
+                          libgnustl\
+                          libdl
+
+LOCAL_STATIC_LIBRARIES := libx264_pre
 
 include $(BUILD_SHARED_LIBRARY)
 
-###########################################################
-#   uPnP port mapping 
-#
-include $(CLEAR_VARS)
-LOCAL_MODULE := libnatpmp
-LOCAL_CFLAGS := -O2 -Wall -DANDROID -DLINUX -I./libnatpmp/  
-
-#including source files
-include $(LOCAL_PATH)/libnatpmp_build.mk
-
-LOCAL_LDLIBS := -llog
-
-include $(BUILD_SHARED_LIBRARY)   

@@ -9,19 +9,31 @@ https://play.google.com/store/apps/details?id=teaonly.droideye
 
 ## Specifications ##
 * Streaming 
-  * Support Mjpeg streaming and audio (viideo is OK, audio is also OK)
-  * Build-in web service, you can see the video via browser in pc and another phone (PC is ok, phone is not ready)
-* Security
-  * Support user/password setup (Doing)
-  * Support motion detecting (not ready)
+  * Build-in web service, you can see the video via browser in pc and another phone, a modem browser with HTML5 is reauired.
+  * H.264 video and G.726 audio
+  * Streaming via websocket between browser and android phone.
+
+* Smart
+  * Support motion detecting (doing)
+  * Support advanced vision algorithms (doing)
   * Publishing alarm messages to SNS (not ready) 
-* Portable
-  * Setup ADSL router by uPnP (Done, need more testing)
+  
+* Access over internet
+  * This app don't support internet, you can try my another app:
+    https://play.google.com/store/apps/details?id=com.yacamera.p2p
+
+## License and third party libraries
+  * GPL v2
+  * X.264 
+  * Java Websocket library
 
 ## Update ##
-*  2012-07-26  creating project.
-*  2012-08-04  Multiple jpeg streaming is OK, basic framework is OK.
-*  2012-10-18  Bugs fixed, supported IE, Firefox and Chrome. 
-*  2012-10-28  Fixed small bugs, added audio flash player in Web page.
+*  2014-10-10  Refine project with new specifications.
+
+ ... (打酱油) ...
+
 *  2012-10-30  Finished audio support.
-*  2012-11-02  Added uPnp port mapping support, but need more testing.
+*  2012-10-28  Fixed small bugs, added audio flash player in Web page.
+*  2012-10-18  Bugs fixed, supported IE, Firefox and Chrome. 
+*  2012-08-04  Multiple jpeg streaming is OK, basic framework is OK.
+*  2012-07-26  creating project.

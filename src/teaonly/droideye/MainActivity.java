@@ -285,9 +285,9 @@ public class MainActivity extends Activity
 
         public VideoEncodingTask() {
             videoHeader[0] = (byte)0x19;
-            videoHeader[1] = (byte)0x82;
-            videoHeader[2] = (byte)0x08;
-            videoHeader[3] = (byte)0x25;
+            videoHeader[1] = (byte)0x79;
+            videoHeader[2] = (byte)0x10;
+            videoHeader[3] = (byte)0x10;
         }
 
         public void run() {

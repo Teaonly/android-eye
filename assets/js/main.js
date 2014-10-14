@@ -10,12 +10,17 @@ streamer.onOpen = function() {
 };
 
 streamer.onMessage = function(evt) {
-    var msg = evt.data;
+    var blob = evt.data;
+    if ( blob.slice !== undefined) {
+        media new TeaMedia(blob, function() {
+            console.log(media);
+        }.bind(this) );
+    }
 };
 
 streamer.onClose = function() {
 
-}
+};
 
 // like main function in C
 $(document).ready(function() {

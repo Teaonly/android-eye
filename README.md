@@ -12,6 +12,7 @@ https://play.google.com/store/apps/details?id=teaonly.droideye
   * Build-in web service, you can see the video via browser in pc and another phone, a modem browser with HTML5 is reauired.
   * H.264 video and G.726 audio
   * Streaming via websocket between browser and android phone.
+  * Decoding H.264 and G.726 in pure Javascript
 
 * Smart
   * Support motion detecting (doing)

@@ -86,5 +86,5 @@ for file in source_files:
 print 'link -> %s' % 'avc.bc'
 emscripten.Building.link(object_files, 'avc.bc')
 
-print 'emcc %s -> %s' % ('avc.bc', os.path.join(JS_DIR, 'native_module.js'))
-emscripten.Building.emcc('avc.bc', emcc_args, os.path.join(JS_DIR, 'native_module.js'))
+print 'emcc %s -> %s' % ('avc.bc', os.path.join(JS_DIR, 'module.js'))
+emscripten.Building.emcc('avc.bc', emcc_args, os.path.join(JS_DIR, 'module.js'))

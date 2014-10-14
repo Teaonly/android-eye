@@ -3,7 +3,8 @@ package teaonly.droideye;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.nio.ByteBuffer;
+import java.nio.*;
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.ExecutorService;
@@ -32,6 +33,8 @@ import android.view.WindowManager;
 import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
@@ -173,7 +176,8 @@ public class MainActivity extends Activity
     //  Internal help functions
     //
     private boolean initWebServer() {
-        String ipAddr = "127.0.0.1";
+
+        String ipAddr = wifiIpAddress(this);
         if ( ipAddr != null ) {
             try{
                 webServer = new TeaServer(8080, this);
@@ -183,13 +187,16 @@ public class MainActivity extends Activity
             }
         }
 
-
         TextView tv = (TextView)findViewById(R.id.tv_message);
         if ( webServer != null) {
             tv.setText( getString(R.string.msg_access_local) + " http://" + ipAddr  + ":8080" );
             return true;
         } else {
-            tv.setText( getString(R.string.msg_error) );
+            if ( ipAddr == null) {
+                tv.setText( getString(R.string.msg_wifi_error) );
+            } else {
+                tv.setText( getString(R.string.msg_port_error) );
+            }
             return false;
         }
     }
@@ -259,6 +266,27 @@ public class MainActivity extends Activity
 
     }
 
+    protected String wifiIpAddress(Context context) {
+        WifiManager wifiManager = (WifiManager) context.getSystemService(WIFI_SERVICE);
+        int ipAddress = wifiManager.getConnectionInfo().getIpAddress();
+
+        // Convert little-endian to big-endianif needed
+        if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
+            ipAddress = Integer.reverseBytes(ipAddress);
+        }
+
+        byte[] ipByteArray = BigInteger.valueOf(ipAddress).toByteArray();
+
+        String ipAddressString;
+        try {
+            ipAddressString = InetAddress.getByAddress(ipByteArray).getHostAddress();
+        } catch (UnknownHostException ex) {
+            Log.e("WIFIIP", "Unable to get host address.");
+            ipAddressString = null;
+        }
+
+        return ipAddressString;
+    }
 
     //
     //  Internal help class and object definment

@@ -1,6 +1,6 @@
 function AdpcmDecoder() {
-    this._inMemory = Module._malloc(1024*64);
-    this._outMemory = Module._malloc(1024*64);
+    this._inMemory = Module._malloc(1024*128);
+    this._outMemory = Module._malloc(1024*128);
 
     this.doDecode = function(inBuffer) {
         Module.HEAPU8.set(inBuffer, this._inMemory);

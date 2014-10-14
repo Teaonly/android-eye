@@ -131,8 +131,8 @@ public class MainActivity extends Activity
 
         if ( webServer != null)
             webServer.stop();
-
-        audioCapture.release();
+        if ( audioCapture != null)
+            audioCapture.release();
 
         if ( cameraView != null) {
             previewLock.lock();
@@ -160,9 +160,11 @@ public class MainActivity extends Activity
 
         nativeInitMediaEncoder(cameraView.Width(), cameraView.Height());
 
-        audioCapture.startRecording();
-        AudioEncoder audioEncoder = new AudioEncoder();
-        audioEncoder.start();
+        if ( audioCapture != null) {
+            audioCapture.startRecording();
+            AudioEncoder audioEncoder = new AudioEncoder();
+            audioEncoder.start();
+        }
 
         cameraView.StartPreview();
     }
@@ -207,11 +209,15 @@ public class MainActivity extends Activity
             targetSize = minBufferSize;
         }
         if (audioCapture == null) {
-            audioCapture = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                    16000,
+            try {
+              audioCapture = new AudioRecord(MediaRecorder.AudioSource.MIC,
+                    8000,
                     AudioFormat.CHANNEL_IN_MONO,
                     AudioFormat.ENCODING_PCM_16BIT,
                     targetSize);
+            } catch (IllegalArgumentException	 e) {
+              audioCapture = null;
+            }
         }
 
     }
@@ -348,7 +354,7 @@ public class MainActivity extends Activity
         private byte[] audioPacket = new byte[1024*1024];
         private byte[] audioHeader = new byte[8];
 
-        int packageSize = 3200;
+        int packageSize = 16000;
 
         public AudioEncoder () {
             audioHeader[0] = (byte)0x19;
@@ -378,7 +384,10 @@ public class MainActivity extends Activity
 
                 synchronized (MainActivity.this) {
                     currentBlock.write( audioHeader, 8);
-                    currentBlock.write( audioPacket, ret);
+                    ret = currentBlock.write( audioPacket, ret);
+                    if ( ret == 0) {
+                        Log.d(TAG, ">>>>>>> lost audio in Java>>>");
+                    }
                 }
             }
         }

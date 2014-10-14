@@ -39,10 +39,15 @@ h1.logo {
     margin-top: 12px;
 }
 
+.video-controls {
+   margin-top: 5px;
+   margin-bottom: 0px;
+}
+
 .video-container {
     box-sizing: border-box;
     position: relative;
-    margin-top: 10px;
+    margin-top: -5px;
 }
 
 .video-player {

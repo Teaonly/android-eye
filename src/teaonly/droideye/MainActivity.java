@@ -177,6 +177,7 @@ public class MainActivity extends Activity
         if ( ipAddr != null ) {
             try{
                 webServer = new TeaServer(8080, this);
+                webServer.registerCGI("/cgi/query", doQuery);
             }catch (IOException e){
                 webServer = null;
             }
@@ -283,6 +284,25 @@ public class MainActivity extends Activity
         System.arraycopy(frame, 0, yuvFrame, 0, size);
 
         executor.execute(videoTask);
+    };
+
+
+    private TeaServer.CommonGatewayInterface doQuery = new TeaServer.CommonGatewayInterface () {
+        @Override
+        public String run(Properties parms) {
+            String ret = "";
+            if ( streamingServer.inStreaming == true ) {
+                ret = "{\"state\": \"busy\"}";
+            } else {
+                ret = "{\"state\": \"ok\"}";
+            }
+            return ret;
+        }
+
+        @Override
+        public InputStream streaming(Properties parms) {
+            return null;
+        }
     };
 
     private class VideoEncodingTask implements Runnable {

@@ -11,7 +11,6 @@ streamer.onOpen = function() {
 
 streamer.onMessage = function(evt) {
     var msg = evt.data;
-    console.log(msg);
 };
 
 streamer.onClose = function() {

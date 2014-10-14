@@ -48,6 +48,8 @@ public class MainActivity extends Activity
     public static String TAG="TEAONLY";
     private final int ServerPort = 8080;
     private final int StreamingPort = 8088;
+    private final int PictureWidth = 480;
+    private final int PictureHeight = 360;
     private final int MediaBlockNumber = 16;
     private final int MediaBlockSize = 1024*512;
     private final int EstimatedFrameNumber = 30;
@@ -154,7 +156,7 @@ public class MainActivity extends Activity
     //
     public void onCameraReady() {
         cameraView.StopPreview();
-        cameraView.setupCamera(640, 480, 4, 25.0, previewCb);
+        cameraView.setupCamera(PictureWidth, PictureHeight, 4, 25.0, previewCb);
 
         nativeInitMediaEncoder(cameraView.Width(), cameraView.Height());
 
@@ -234,7 +236,7 @@ public class MainActivity extends Activity
         }
 
         if ( targetBlock != null) {
-            Log.d(TAG, "######: " + targetBlock.length());
+            streamingServer.sendMedia( targetBlock.data(), targetBlock.length());
             synchronized(MainActivity.this) {
                 targetBlock.reset();
                 freeQueue.offer(targetBlock);
@@ -279,6 +281,14 @@ public class MainActivity extends Activity
 
     private class VideoEncodingTask implements Runnable {
         private byte[] resultNal = new byte[1024*1024];
+        private byte[] videoHeader = new byte[8];
+
+        public VideoEncodingTask() {
+            videoHeader[0] = (byte)0x19;
+            videoHeader[1] = (byte)0x82;
+            videoHeader[2] = (byte)0x08;
+            videoHeader[3] = (byte)0x25;
+        }
 
         public void run() {
             int flag = 0;
@@ -291,10 +301,15 @@ public class MainActivity extends Activity
                 return;
             }
 
+            videoHeader[4] = (byte)(ret & 0xFF);
+            videoHeader[5] = (byte)((ret>>8) & 0xFF);
+            videoHeader[6] = (byte)((ret>>16) & 0xFF);
+            videoHeader[7] = (byte)((ret>>24) & 0xFF);
+
             synchronized(MainActivity.this) {
-                if ( currentBlock.length() + ret <= MediaBlockSize ) {
+                if ( currentBlock.length() + ret + 8 <= MediaBlockSize ) {
+                    currentBlock.write( videoHeader, 8 );
                     currentBlock.writeVideo( resultNal, ret);
-                    Log.d(TAG, ">>>>> Write Video to block : " + currentBlock.length() );
                 } else {
                     // FIXME : drop this packet
 
@@ -307,14 +322,10 @@ public class MainActivity extends Activity
                     }
 
                     inProcessing = false;
-
-                    Log.d(TAG, ">>>>> Drop packet: " + currentBlock.length() );
                     return;
                 }
 
                 if ( currentBlock.videoCount >= EstimatedFrameNumber) {
-                    Log.d(TAG, ">>>>> Completed Block: " + currentBlock.length() );
-
                     if ( freeQueue.size() == 0) {
                         currentBlock.reset();
                     } else {
@@ -323,7 +334,6 @@ public class MainActivity extends Activity
                         currentBlock.reset();
                     }
 
-                    Log.d(TAG, "\t\tFree Block: " + freeQueue.size() );
                 }
 
                 inProcessing = false;
@@ -336,8 +346,16 @@ public class MainActivity extends Activity
     private class AudioEncoder extends Thread {
         private byte[] audioPCM = new byte[1024*32];
         private byte[] audioPacket = new byte[1024*1024];
+        private byte[] audioHeader = new byte[8];
 
-        int packageSize = 800;
+        int packageSize = 3200;
+
+        public AudioEncoder () {
+            audioHeader[0] = (byte)0x19;
+            audioHeader[1] = (byte)0x82;
+            audioHeader[2] = (byte)0x08;
+            audioHeader[3] = (byte)0x25;
+        }
 
         @Override
         public void run() {
@@ -353,9 +371,14 @@ public class MainActivity extends Activity
                     break;
                 }
 
+                audioHeader[4] = (byte)(ret & 0xFF);
+                audioHeader[5] = (byte)((ret>>8) & 0xFF);
+                audioHeader[6] = (byte)((ret>>16) & 0xFF);
+                audioHeader[7] = (byte)((ret>>24) & 0xFF);
+
                 synchronized (MainActivity.this) {
+                    currentBlock.write( audioHeader, 8);
                     currentBlock.write( audioPacket, ret);
-                    Log.d(TAG, ">>>>Audio wirte:" + currentBlock.length());
                 }
             }
         }
@@ -365,10 +388,28 @@ public class MainActivity extends Activity
     private class StreamingServer extends WebSocketServer {
         private WebSocket mediaSocket = null;
         public boolean inStreaming = false;
+        ByteBuffer buf = ByteBuffer.allocate(MediaBlockSize);
 
         public StreamingServer( int port) throws UnknownHostException {
 		        super( new InetSocketAddress( port ) );
 	      }
+
+        public boolean sendMedia(byte[] data, int length) {
+            boolean ret = false;
+
+            if ( inStreaming == true) {
+                buf.clear();
+                buf.put(data, 0, length);
+                buf.flip();
+            }
+
+            if ( inStreaming == true) {
+                mediaSocket.send( buf );
+                ret = true;
+            }
+
+            return ret;
+        }
 
         @Override
       	public void onOpen( WebSocket conn, ClientHandshake handshake ) {
@@ -408,7 +449,6 @@ public class MainActivity extends Activity
         }
 
     }
-
 
     private native void nativeInitMediaEncoder(int width, int height);
     private native void nativeReleaseMediaEncoder(int width, int height);

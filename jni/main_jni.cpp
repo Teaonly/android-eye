@@ -61,10 +61,10 @@ JOW(int, nativeDoAudioEncode)(JNIEnv* env, jclass, jbyteArray pcmData, jint leng
         }
     }
 
-    return j;
-
     env->ReleaseByteArrayElements(g726Data, audioPacket, 0);
     env->ReleaseByteArrayElements(pcmData, audioFrame, JNI_ABORT);
+
+    return j;
 }
 
 extern "C" jint JNIEXPORT JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved) {

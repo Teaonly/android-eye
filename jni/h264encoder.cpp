@@ -27,9 +27,9 @@ void H264Encoder::init_(const int wid, const int hei) {
     x264_opt_.b_intra_refresh = 1;
     
     x264_opt_.rc.i_rc_method = X264_RC_CQP;
-    x264_opt_.rc.i_qp_constant = 26;
-    x264_opt_.rc.i_qp_min = 26;
-    x264_opt_.rc.i_qp_max = 26;
+    x264_opt_.rc.i_qp_constant = 32;
+    x264_opt_.rc.i_qp_min = 32;
+    x264_opt_.rc.i_qp_max = 32;
     //x264_param_default(&opt);
     x264_param_apply_profile(&x264_opt_, "baseline");
 

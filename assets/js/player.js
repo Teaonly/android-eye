@@ -27,8 +27,6 @@ function Player (canvas, sampleRate) {
         this._sampleRate = sampleRate;
         this._audioBufferList = new Array();
 
-
-
         this._avc = new Avc();
         this._avc.onPictureDecoded = function(buffer, wid, hei) {
             var yuv = new Uint8Array(buffer.length);
@@ -42,9 +40,7 @@ function Player (canvas, sampleRate) {
 
     this.playMedia = function(media) {
         var i = 0;
-        var totalLength = 0;
         for(i = 0; i < media.pcmBlocks.length; i++) {
-
             var audioDecoder = new AdpcmDecoder();
             var pcmData = audioDecoder.doDecode(media.pcmBlocks[i]);
             audioDecoder.release();
@@ -53,7 +49,12 @@ function Player (canvas, sampleRate) {
             this._pushAudioBuffer(pcmData);
         }
 
+        for(i = 0; i < media.nalBlocks.length; i++) {
+            this._avc.decode(media.nalBlocks[i]);
+        }
+
         delete media;
+
     }.bind(this);
 
     // private functions
@@ -130,7 +131,7 @@ function Player (canvas, sampleRate) {
 
     this._playVideo = function() {
         if ( this._videoBufferList.length >= 2) {
-            setTimeout(this._playVideo, 200);
+            setTimeout(this._playVideo, 30);
         }
 
         this._showPicture(this._videoBufferList[0] );
@@ -142,9 +143,8 @@ function Player (canvas, sampleRate) {
         this._videoBufferList.push(picture);
 
         if ( this._videoBufferList.length === 1) {
-            setTimeout(this._playVideo, 10);
+            setTimeout(this._playVideo, 100);
         }
-
     }.bind(this);
 
     // init

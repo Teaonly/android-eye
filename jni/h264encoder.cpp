@@ -17,19 +17,19 @@ H264Encoder::~H264Encoder() {
 }
 
 void H264Encoder::init_(const int wid, const int hei) {
-    // 0. building encoder parameters. 
+    // 0. building encoder parameters.
     x264_param_default_preset(&x264_opt_, "ultrafast", "zerolatency");
- 
+
     x264_opt_.i_width = wid;
     x264_opt_.i_height = hei;
     x264_opt_.i_threads = 1;
     x264_opt_.b_repeat_headers = 1;
     x264_opt_.b_intra_refresh = 1;
-    
+
     x264_opt_.rc.i_rc_method = X264_RC_CQP;
-    x264_opt_.rc.i_qp_constant = 32;
-    x264_opt_.rc.i_qp_min = 32;
-    x264_opt_.rc.i_qp_max = 32;
+    x264_opt_.rc.i_qp_constant = 30;
+    x264_opt_.rc.i_qp_min = 30;
+    x264_opt_.rc.i_qp_max = 30;
     //x264_param_default(&opt);
     x264_param_apply_profile(&x264_opt_, "baseline");
 
@@ -56,19 +56,19 @@ int H264Encoder::doEncode(const unsigned char* yuv, unsigned char* outBuffer, co
 
     int nals;
     x264_nal_t *nal_pointer;
-    int ret = x264_encoder_encode(x264_hdl_, &nal_pointer, &nals, &x264_picin_, &x264_picout_); 
+    int ret = x264_encoder_encode(x264_hdl_, &nal_pointer, &nals, &x264_picin_, &x264_picout_);
     if ( ret <= 0) {
         return ret;
     }
-    
+
     int outLength = 0;
     for ( int i = 0; i < nals; i++) {
         if( nal_pointer[i].i_type != 6) {
             x264_nal_t* nal = &nal_pointer[i];
             memcpy(&outBuffer[outLength], nal->p_payload, nal->i_payload);
-            outLength += nal->i_payload;  
+            outLength += nal->i_payload;
         }
-   }   
+   }
 
-   return outLength;  
+   return outLength;
 }

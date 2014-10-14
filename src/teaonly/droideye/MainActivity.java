@@ -45,6 +45,7 @@ import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
+//import com.google.android.gms.ads.*;
 
 public class MainActivity extends Activity
         implements CameraView.CameraReadyCallback {
@@ -92,9 +93,18 @@ public class MainActivity extends Activity
         // load and setup GUI
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        
+        /* removed AD
+        AdView adView = new AdView(this);
+        adView.setAdUnitId("ca-app-pub-7979468066645196/6325058260");
+        adView.setAdSize(AdSize.BANNER);
+        LinearLayout layout = (LinearLayout)findViewById(R.id.layout_ad);
+        layout.addView(adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
+        */
 
         // init audio and camera
-
         for(int i = 0; i < MediaBlockNumber; i++) {
             mediaBlocks[i] = new MediaBlock(MediaBlockSize);
         }

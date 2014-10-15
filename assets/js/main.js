@@ -21,6 +21,7 @@ streamer.onMessage = function(evt) {
         }.bind(this) );
     }
 };
+
 streamer.onClose = function() {
     alert("Mobile is disconnected!");
     $("#btnPlay").prop('disabled', true);
@@ -57,7 +58,10 @@ $(document).ready(function() {
               success: function(ret) {
                 console.log(ret);
                 var result = JSON.parse(ret);
-                if ( result["state"] === "ok") {
+                if ( result.state === "ok") {
+                    document.getElementById("videoPlayer").width = result.width;
+                    document.getElementById("videoPlayer").height = result.height;
+
                     connect();
                 } else {
                     alert("Mobile is busy!");

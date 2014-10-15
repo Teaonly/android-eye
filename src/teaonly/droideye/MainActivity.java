@@ -54,7 +54,7 @@ public class MainActivity extends Activity
     private final int StreamingPort = 8088;
     private final int PictureWidth = 480;
     private final int PictureHeight = 360;
-    private final int MediaBlockNumber = 16;
+    private final int MediaBlockNumber = 3;
     private final int MediaBlockSize = 1024*512;
     private final int EstimatedFrameNumber = 30;
     private final int StreamingInterval = 100;
@@ -73,9 +73,8 @@ public class MainActivity extends Activity
     byte[] yuvFrame = new byte[1920*1280*2];
 
     MediaBlock[] mediaBlocks = new MediaBlock[MediaBlockNumber];
-    BlockingQueue mediaQueue = new ArrayBlockingQueue(MediaBlockNumber);
-    BlockingQueue freeQueue = new ArrayBlockingQueue(MediaBlockNumber);
-    MediaBlock currentBlock;
+    int mediaWriteIndex = 0;
+    int mediaReadIndex = 0;
 
     Handler streamingHandler;
 
@@ -237,33 +236,30 @@ public class MainActivity extends Activity
               audioCapture = null;
             }
         }
-
     }
 
     private void resetMediaBuffer() {
         synchronized(MainActivity.this) {
-            mediaQueue.clear();
-            freeQueue.clear();
             for (int i = 1; i < MediaBlockNumber; i++) {
                 mediaBlocks[i].reset();
-                freeQueue.offer( mediaBlocks[i]);
             }
-            mediaBlocks[0].reset();
-            currentBlock = mediaBlocks[0];
+            mediaWriteIndex = 0;
+            mediaReadIndex = 0;
         }
     }
 
     private void doStreaming () {
-        MediaBlock targetBlock = null;
         synchronized(MainActivity.this) {
-            targetBlock = (MediaBlock) mediaQueue.poll();
-        }
-
-        if ( targetBlock != null) {
-            streamingServer.sendMedia( targetBlock.data(), targetBlock.length());
-            synchronized(MainActivity.this) {
+               
+            MediaBlock targetBlock = mediaBlocks[mediaReadIndex];
+            if ( targetBlock.flag == 1) {
+                streamingServer.sendMedia( targetBlock.data(), targetBlock.length());
                 targetBlock.reset();
-                freeQueue.offer(targetBlock);
+
+                mediaReadIndex ++;
+                if ( mediaReadIndex >= MediaBlockNumber) {
+                    mediaReadIndex = 0;
+                } 
             }
         }
 
@@ -332,7 +328,9 @@ public class MainActivity extends Activity
             if ( streamingServer.inStreaming == true ) {
                 ret = "{\"state\": \"busy\"}";
             } else {
-                ret = "{\"state\": \"ok\"}";
+                ret = "{\"state\": \"ok\",";
+                ret = ret + "\"width\": \"" + cameraView.Width() + "\",";
+                ret = ret + "\"height\": \"" + cameraView.Height() + "\"}";
             }
             return ret;
         }
@@ -350,60 +348,64 @@ public class MainActivity extends Activity
         public VideoEncodingTask() {
             videoHeader[0] = (byte)0x19;
             videoHeader[1] = (byte)0x79;
-            videoHeader[2] = (byte)0x10;
-            videoHeader[3] = (byte)0x10;
         }
 
         public void run() {
-            int flag = 0;
-            if ( currentBlock.videoCount == 0) {
-                flag = 1;
-            }
-
-            int ret = nativeDoVideoEncode(yuvFrame, resultNal, flag);
-            if ( ret <= 0) {
+            MediaBlock currentBlock = mediaBlocks[ mediaWriteIndex ];
+            if ( currentBlock.flag == 1) {
+                inProcessing = false;
                 return;
             }
 
+            int intraFlag = 0;
+            if ( currentBlock.videoCount == 0) {
+                intraFlag = 1;
+            }
+            int millis = (int)(System.currentTimeMillis() % 65535);
+            int ret = nativeDoVideoEncode(yuvFrame, resultNal, intraFlag);
+            if ( ret <= 0) {
+                return;
+            }
+            
+            // timestamp
+            videoHeader[2] = (byte)(millis & 0xFF);
+            videoHeader[3] = (byte)((millis>>8) & 0xFF);
+            // length
             videoHeader[4] = (byte)(ret & 0xFF);
             videoHeader[5] = (byte)((ret>>8) & 0xFF);
             videoHeader[6] = (byte)((ret>>16) & 0xFF);
             videoHeader[7] = (byte)((ret>>24) & 0xFF);
 
             synchronized(MainActivity.this) {
-                if ( currentBlock.length() + ret + 8 <= MediaBlockSize ) {
-                    currentBlock.write( videoHeader, 8 );
-                    currentBlock.writeVideo( resultNal, ret);
-                } else {
-                    // FIXME : drop this packet
+                if ( currentBlock.flag == 0) { 
+                    boolean changeBlock = false;
 
-                    if ( freeQueue.size() == 0) {
-                        currentBlock.reset();
+                    if ( currentBlock.length() + ret + 8 <= MediaBlockSize ) {
+                        currentBlock.write( videoHeader, 8 );
+                        currentBlock.writeVideo( resultNal, ret);
                     } else {
-                        mediaQueue.offer(currentBlock);
-                        currentBlock = (MediaBlock) freeQueue.poll();
-                        currentBlock.reset();
+                        changeBlock = true;
+                    }
+                    
+                    if ( changeBlock == false ) {
+                        if ( currentBlock.videoCount >= EstimatedFrameNumber) {
+                            changeBlock = true;
+                        }
                     }
 
-                    inProcessing = false;
-                    return;
-                }
-
-                if ( currentBlock.videoCount >= EstimatedFrameNumber) {
-                    if ( freeQueue.size() == 0) {
-                        currentBlock.reset();
-                    } else {
-                        mediaQueue.offer(currentBlock);
-                        currentBlock = (MediaBlock) freeQueue.poll();
-                        currentBlock.reset();
+                    if ( changeBlock == true) {
+                        currentBlock.flag = 1;
+                        
+                        mediaWriteIndex ++;
+                        if ( mediaWriteIndex >= MediaBlockNumber) {
+                            mediaWriteIndex = 0;
+                        } 
                     }
-
                 }
 
-                inProcessing = false;
             }
 
-
+            inProcessing = false;
         }
     };
 
@@ -417,13 +419,13 @@ public class MainActivity extends Activity
         public AudioEncoder () {
             audioHeader[0] = (byte)0x19;
             audioHeader[1] = (byte)0x82;
-            audioHeader[2] = (byte)0x08;
-            audioHeader[3] = (byte)0x25;
         }
 
         @Override
         public void run() {
             while(true) {
+                int millis = (int)(System.currentTimeMillis() % 65535);
+                
                 int ret = audioCapture.read(audioPCM, 0, packageSize);
                 if ( ret == AudioRecord.ERROR_INVALID_OPERATION ||
                      ret == AudioRecord.ERROR_BAD_VALUE) {
@@ -434,17 +436,24 @@ public class MainActivity extends Activity
                 if(ret <= 0) {
                     break;
                 }
-
+                
+                // timestamp 
+                audioHeader[2] = (byte)(millis & 0xFF);
+                audioHeader[3] = (byte)((millis>>8) & 0xFF);
+                // length
                 audioHeader[4] = (byte)(ret & 0xFF);
                 audioHeader[5] = (byte)((ret>>8) & 0xFF);
                 audioHeader[6] = (byte)((ret>>16) & 0xFF);
                 audioHeader[7] = (byte)((ret>>24) & 0xFF);
 
                 synchronized (MainActivity.this) {
-                    currentBlock.write( audioHeader, 8);
-                    ret = currentBlock.write( audioPacket, ret);
-                    if ( ret == 0) {
-                        Log.d(TAG, ">>>>>>> lost audio in Java>>>");
+                    MediaBlock currentBlock = mediaBlocks[ mediaWriteIndex];
+                    if ( currentBlock.flag == 0) { 
+                        currentBlock.write( audioHeader, 8);
+                        ret = currentBlock.write( audioPacket, ret);
+                        if ( ret == 0) {
+                            Log.d(TAG, ">>>>>>> lost audio in Java>>>");
+                        }
                     }
                 }
             }
@@ -483,19 +492,19 @@ public class MainActivity extends Activity
             if ( inStreaming == true) {
                 conn.close();
             } else {
+                resetMediaBuffer();
                 mediaSocket = conn;
                 inStreaming = true;
             }
       	}
 
         @Override
-	      public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
-		         if ( conn == mediaSocket) {
+	    public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
+            if ( conn == mediaSocket) {
                 inStreaming = false;
                 mediaSocket = null;
-                resetMediaBuffer();
-             }
-	      }
+            }
+        }
 
         @Override
       	public void onError( WebSocket conn, Exception ex ) {

@@ -3,6 +3,8 @@ package teaonly.droideye;
 class MediaBlock {
     public int videoCount = 0;
 
+    public int flag = 0;
+
     private byte[] buffer;
     private int bufferLength;
     private int currentLength;
@@ -18,6 +20,7 @@ class MediaBlock {
         synchronized ( this) {
             currentLength = 0;
             videoCount = 0;
+            flag = 0;
         }
     }
 
@@ -30,32 +33,28 @@ class MediaBlock {
     }
 
     public int writeVideo(byte[] data, int length) {
-        synchronized ( this) {
-            if ( currentLength + length  >= bufferLength) {
-                return 0;
-            }
-
-            for(int i = 0; i < length; i++) {
-                buffer[currentLength] = data[i];
-                currentLength++;
-            }
-            videoCount ++;
-            return length;
+        if ( currentLength + length  >= bufferLength) {
+            return 0;
         }
+
+        for(int i = 0; i < length; i++) {
+            buffer[currentLength] = data[i];
+            currentLength++;
+        }
+        videoCount ++;
+        return length;
     }
 
     public int write(byte[] data, int length) {
-        synchronized ( this) {
-            if ( currentLength + length  >= bufferLength) {
-                return 0;
-            }
-
-            for(int i = 0; i < length; i++) {
-                buffer[currentLength] = data[i];
-                currentLength++;
-            }
-
-            return length;
+        if ( currentLength + length  >= bufferLength) {
+            return 0;
         }
+
+        for(int i = 0; i < length; i++) {
+            buffer[currentLength] = data[i];
+            currentLength++;
+        }
+
+        return length;
     }
 }

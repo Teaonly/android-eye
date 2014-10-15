@@ -17,25 +17,21 @@ function TeaMedia(blob, parseDone) {
 
     // internal functions
     this._findNext = function(payload, i) {
-        var info = {'type': 0, 'length': 0};
+        var block = {'type': 0, 'length': 0, 'timeStamp': -1};
 
-        if ( payload[i] === 0x19
-             && payload[i+1] === 0x79
-             && payload[i+2] === 0x10
-             && payload[i+3] === 0x10) {
+        if ( payload[i] === 0x19 && payload[i+1] === 0x79) {
 
-            info.type = 1;
-            info.length = (payload[i+7] << 24) + (payload[i+6] << 16) + (payload[i+5] << 8) + payload[i+4];
+            block.type = 1;
+            block.timeStamp = (payload[i+3] << 8) + payload[i+2];
+            block.length = (payload[i+7] << 24) + (payload[i+6] << 16) + (payload[i+5] << 8) + payload[i+4];
+        } else if ( payload[i] === 0x19 && payload[i+1] === 0x82) {
 
-        } else if ( payload[i] === 0x19
-                    && payload[i+1] === 0x82
-                    && payload[i+2] === 0x08
-                    && payload[i+3] === 0x25) {
-            info.type = 2;
-            info.length = (payload[i+7] << 24) + (payload[i+6] << 16) + (payload[i+5] << 8) + payload[i+4];
+            block.type = 2;
+            block.timeStamp = (payload[i+3] << 8) + payload[i+2];
+            block.length = (payload[i+7] << 24) + (payload[i+6] << 16) + (payload[i+5] << 8) + payload[i+4];
         }
 
-        return info;
+        return block;
 
     }.bind(this);
 
@@ -49,13 +45,17 @@ function TeaMedia(blob, parseDone) {
                 break;
             }
 
-            info = this._findNext(payload, i);
-            if ( info.type === 1) {
-                this.nalBlocks.push ( payload.subarray(i+8, i+8+info.length) );
-                i = i + 8 + info.length;
-            } else if ( info.type === 2) {
-                this.pcmBlocks.push ( payload.subarray(i+8, i+8+info.length) );
-                i = i + 8 + info.length;
+            var block = this._findNext(payload, i);
+            if ( block.type === 1 ) {
+                block.payload = payload.subarray(i+8, i+8+block.length);
+                this.nalBlocks.push(block);
+                i = i + 8 + block.length;
+
+            } else if ( block.type === 2) {
+                block.payload = payload.subarray(i+8, i+8+block.length);
+                this.pcmBlocks.push(block);
+                i = i + 8 + block.length;
+
             } else {
                 break;
             }
@@ -77,9 +77,6 @@ function TeaMedia(blob, parseDone) {
         fileReader.readAsArrayBuffer(blob);
 
     }.bind(this);
-
-
-
 
     // init
     this._constructor();

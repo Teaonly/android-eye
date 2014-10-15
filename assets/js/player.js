@@ -72,40 +72,26 @@ function Player (canvas, sampleRate) {
     this._playVideo = function() {
         //requestAnimFrame(this._playVideo);
         if ( this._videoBufferList.length > 0) {
-
-            /*
             if ( this._beginTime === -1) {
-                this._beginTime = (new Date()).getMilliseconds();
+                this._beginTime = (new Date()).getTime();
                 this._offsetTime = this._videoBufferList[0].timeStamp;
             }
 
-            var current = ((new Date()).getMilliseconds() - this._beginTime + this._offsetTime) % 65535;
-            var diff = current - this._videoBufferList[0].timeStamp;
-            var diff = function(a, b) {
-                if ( a > 60000 & b < 1000)
+            var current = ((new Date()).getTime() - this._beginTime + this._offsetTime) % 65535;
 
-            };
-            */
+            if ( (current > this._videoBufferList[0].timeStamp)
+                 ||  ((current < 1000) && (current + 65535 > this._videoBufferList[0].timeStamp)) ) {
 
-            if ( this._beginTime === -1) {
-                this._beginTime = this._videoBufferList[0].timeStamp;
-            }
-
-            var diff = this._beginTime - this._videoBufferList[0].timeStamp;
-
-            if ( Math.abs(diff) <= this._renderInterval ) {
                 this._showPicture(this._videoBufferList[0] );
                 delete this._videoBufferList[0];
                 this._videoBufferList.shift();
             }
+
         } else {
 
         }
 
-        if ( this._beginTime > 0) {
-            this._beginTime = (this._beginTime + this._renderInterval) % 65535;
-        }
-        
+
     }.bind(this);
 
     this._pushVideoBuffer = function(picture) {

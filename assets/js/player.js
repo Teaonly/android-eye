@@ -12,9 +12,13 @@ function Player (canvas, sampleRate) {
     this._canvas = null;
     this._canvasContext = null;
     this._rgba = null;
-    this._beginTime = -1;
-    this._offsetTime = -1;
     this._renderInterval = 5;
+
+    this._playedTime = -1;
+    this._lastTime = -1;
+
+    this._videoTime = -1;
+    this._lastVideoTime = -1;
 
     this._avc = null;
     this._videoBufferList = null;
@@ -36,7 +40,6 @@ function Player (canvas, sampleRate) {
     }.bind(this);
 
     this.playMedia = function(media) {
-
         var picture = null;
         this._avc.onPictureDecoded = function(buffer, wid, hei) {
             var yuv = new Uint8Array(buffer.length);
@@ -56,10 +59,12 @@ function Player (canvas, sampleRate) {
                 setTimeout(doDecode, 2);
             } else {
                 delete media;
+
             }
         }.bind(this);
 
         doDecode();
+
 
     }.bind(this);
 
@@ -72,26 +77,30 @@ function Player (canvas, sampleRate) {
     this._playVideo = function() {
         //requestAnimFrame(this._playVideo);
         if ( this._videoBufferList.length > 0) {
-            if ( this._beginTime === -1) {
-                this._beginTime = (new Date()).getTime();
-                this._offsetTime = this._videoBufferList[0].timeStamp;
+            if ( this._playedTime === -1) {
+                this._playedTime = this._videoBufferList[0].timeStamp;
+                this._lastVideoTime = this._videoBufferList[0].timeStamp;
+                this._videoTime = 0;
+            } else {
+                // updated played time
+                this._playedTime += (new Date()).getTime() - this._lastTime;
             }
 
-            var current = ((new Date()).getTime() - this._beginTime + this._offsetTime) % 65535;
+            //console.log(this._playedTime + " vs " + this._videoTime + this._videoBufferList[0].timeStamp );
 
-            if ( (current > this._videoBufferList[0].timeStamp)
-                 ||  ((current < 1000) && (current + 65535 > this._videoBufferList[0].timeStamp)) ) {
+            if ( this._playedTime >= this._videoTime + this._videoBufferList[0].timeStamp ) {
+                // updated video time
+                if (  this._videoBufferList[0].timeStamp < this._lastVideoTime ) {
+                    this._videoTime += 65535;
+                }
+                this._lastVideoTime = this._videoBufferList[0].timeStamp;
 
                 this._showPicture(this._videoBufferList[0] );
                 delete this._videoBufferList[0];
                 this._videoBufferList.shift();
             }
-
-        } else {
-
         }
-
-
+        this._lastTime = (new Date()).getTime();
     }.bind(this);
 
     this._pushVideoBuffer = function(picture) {

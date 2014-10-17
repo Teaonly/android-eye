@@ -4,7 +4,7 @@ config.streamingPort = 8088;
 var mediaSocket = null;
 var player = null;
 var myState = 0;    // -1: error; 0: idle; 1: wainting; 2: palying
-
+   
 var streamer = {};
 streamer.onOpen = function() {
 
@@ -33,7 +33,7 @@ var connect = function() {
     var wsURL = "ws://" + window.location.hostname + ":" + config.streamingPort;
     mediaSocket = new WebSocket(wsURL);
     player = new Player(document.getElementById("videoPlayer"), 8000);
-
+    
     mediaSocket.onopen = streamer.onOpen;
     mediaSocket.onmessage = streamer.onMessage;
     mediaSocket.onclose = streamer.onClose;

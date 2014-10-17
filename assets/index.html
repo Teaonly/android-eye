@@ -28,37 +28,23 @@
           </div>
     </div>
 
-    <div class="video-controls toolbar">
-
-        <button class="btn btn-default" id="btnPlay" >Play</button>
-
-        <div class="span-info pull-right">
-            <span  id="spanInfo"></span>
-        </div>
-
-    </div>
 
     <div class="video-container">
-        <canvas width="640px" height="400px" class="video-player" id="videoPlayer">
-
-        </canvas>
+        <div class="video-player">
+            <img src="img/phone.png" class="video-player" />
+            <canvas width="640px" height="360px" class="video-player" id="videoPlayer"></canvas>
+        </div>
   	</div><!-- end container for captions and video -->
 
-    <br>
-    <p class="pull-right">&copy; 2014 Zhou Chang</p>
-</div>
-
-
-<!-- 等待对话框-->
-<div id="modalWaittng" class="modal fade" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-body">
-                <h4 class="modal-title" id="headMessage">Info here...</h4>
-            </div>
+    <div class="video-controls toolbar center">
+        <div class="span-info">
+            <span  id="spanInfo">&nbsp;</span>
         </div>
+        <button class="btn btn-default" id="btnPlay" >Play</button>
     </div>
+
 </div>
+
 
 <!-- emscripten and interface -->
 <script src="js/emscripten/module.js"></script>
